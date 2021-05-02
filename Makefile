@@ -6,8 +6,10 @@ OBJS = \
   Image.o \
   main.o
 
-CFITSIO_INCLUDE = /usr/include/cfitsio
-CFITSIO_LIB = /usr/lib/cfitsio
+INCLUDE_PATH = /usr/local/include/cfitsio
+LIB_PATH = /usr/local/lib
+
+LIBS = -lcfitsio
 
 REBUILDABLES = $(OBJS) $(LINK_TARGET)
 
@@ -15,10 +17,10 @@ all : $(LINK_TARGET)
 	echo All done
 
 $(LINK_TARGET) : $(OBJS)
-	g++ -g -o $@ $^
+	g++ -g -o $@ $^ -I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
 
 %.o : %.cpp
-	g++ -g -o $@ -c $< -I $(CFITSIO_INCLUDE) -L $(CFITSIO_LIB)
+	g++ -g -o $@ -c $< -I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
 
 clean :
 	rm -f $(REBUILDABLES)
