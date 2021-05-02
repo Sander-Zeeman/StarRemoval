@@ -1,4 +1,4 @@
-#include "Image.h"
+#include "include/Image.h"
 
 SR::Image::Image(const char *filename)
 	: name(filename)
