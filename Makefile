@@ -3,8 +3,13 @@
 LINK_TARGET = star_removal.out
 
 OBJS = \
+  Connectivity.o \
+  Heap.o \
   Image.o \
-  main.o
+  main.o \
+  MaxTree.o \
+  Node.o \
+  Pixel.o
 
 INCLUDE_PATH = /usr/local/include/cfitsio
 LIB_PATH = /usr/local/lib

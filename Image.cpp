@@ -1,18 +1,18 @@
 #include "include/Image.h"
 
-SR::Image::Image(const char *filename)
-	: name(filename)
+Image::Image(const char *filename)
+	: m_name(filename)
 {
 	readImage();
 }
 
-SR::Image::~Image()
+Image::~Image()
 {
-	if (img)
-		delete [] img;
+	if (m_data)
+		delete [] m_data;
 }
 
-void SR::Image::printError(int status)
+void Image::printError(int status)
 {
 	if (status) {
 		fits_report_error(stderr, status);
@@ -21,11 +21,11 @@ void SR::Image::printError(int status)
 	return;
 }
 
-void SR::Image::readImage()
+void Image::readImage()
 {
 	// Find the extension of the given filename, so we know how to read it.
 	const char *extension;
-	extension = strrchr(name, '.');
+	extension = strrchr(m_name, '.');
 
 	// No extension was found.
 	if (!extension) {
@@ -37,12 +37,12 @@ void SR::Image::readImage()
 		// File is a FITS file.
 		readFitsImage();
 	} else {
-		// File has another extension, to be handled by OpenCV
-		readStandardImage();
+		// File has another extension, to be handled by OpenCV later.
+		std::cout << "Standard file read, to be handled." << std::endl;
 	}
 }
 
-void SR::Image::readFitsImage()
+void Image::readFitsImage()
 {
 	fitsfile *fptr;
 	int status = 0;
@@ -50,28 +50,23 @@ void SR::Image::readFitsImage()
 	long npixels, fpixel = 1, naxes[2];
 	float nullval = 0;
 
-	if ( fits_open_file(&fptr, name, READONLY, &status) )
+	if ( fits_open_file(&fptr, m_name, READONLY, &status) )
 		printError( status );
 
 	if ( fits_read_keys_lng(fptr, "NAXIS", 1, 2, naxes, &nfound, &status) )
 		printError( status );
 
-	width = naxes[0];
-	height = naxes[1];
+	m_width = naxes[0];
+	m_height = naxes[1];
 
-	npixels  = width * height;
-	img = new float[npixels];
+	m_size  = m_width * m_height;
+	m_data = new float[m_size];
 
-	if ( fits_read_img(fptr, TFLOAT, fpixel, npixels, &nullval, img, &anynull, &status) )
+	if ( fits_read_img(fptr, TFLOAT, fpixel, m_size, &nullval, m_data, &anynull, &status) )
 		printError( status );
 
 	if ( fits_close_file(fptr, &status) )
 		printError( status );
 
 	return;
-}
-
-void SR::Image::readStandardImage()
-{
-	std::cout << "Standard file read, to be handled." << std::endl;
 }

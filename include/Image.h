@@ -2,11 +2,8 @@
 #define IMAGE_H
 
 #include <fitsio.h>
-#include <stdio.h>
 #include <iostream>
 #include <cstring>
-
-namespace SR {
 
 class Image {
 
@@ -14,23 +11,22 @@ public:
 	Image(const char *filename);
 	~Image();
 
-	float *get_img() { return img; }
-	int get_width() { return width; }
-	int get_height() { return height; }
+	float *data() { return m_data; }
+	int width() { return m_width; }
+	int height() { return m_height; }
+	long size() { return m_size; }
 
 private:
-	const char *name = nullptr;
-	float *img = nullptr;
-	int width = 0;
-	int height = 0;
+	const char *m_name = nullptr;
+	float *m_data = nullptr;
+	int m_width = 0;
+	int m_height = 0;
+	long m_size = 0;
 
 	void printError(int status);
 	void readImage();
 	void readFitsImage();
-	void readStandardImage();
 
 };
-
-}
 
 #endif
