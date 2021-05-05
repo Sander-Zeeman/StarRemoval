@@ -1,15 +1,97 @@
 #include "include/Image.h"
+#include <iomanip>
+
+
+
+/*
+ * 0.0 0.0 0.0 0.2 0.2 0.2
+ * 0.0 0.0 0.2 0.2 0.4 0.2
+ * 0.0 0.2 0.2 0.4 0.6 0.4
+ * 0.0 0.0 0.2 0.2 0.4 0.2
+ * 0.0 0.0 0.0 0.2 0.2 0.2
+ * 0.0 0.0 0.0 0.0 0.2 0.0
+ *
+ * -3 0 0  13 13 13
+ * 0  0 13 13 X3 13
+ * 0  X 13 22 -X X3
+ * 0  0 13 13 X3 13
+ * 0  0 0  13 13 13
+ * 0  0 0  0  13 0
+ *
+ *
+ *
+ */
+
 
 Image::Image(const char *filename)
 	: m_name(filename)
 {
-	readImage();
+//	readImage();
+
+	m_width = 6;
+	m_height = 6;
+	m_size = 36;
+
+	m_data = new float[36];
+
+	m_data[0] = 0.0;
+	m_data[1] = 0.0;
+	m_data[2] = 0.0;
+	m_data[3] = 0.2;
+	m_data[4] = 0.2;
+	m_data[5] = 0.2;
+
+	m_data[6] = 0.0;
+	m_data[7] = 0.0;
+	m_data[8] = 0.2;
+	m_data[9] = 0.2;
+	m_data[10] = 0.4;
+	m_data[11] = 0.2;
+
+	m_data[12] = 0.0;
+	m_data[13] = 0.2;
+	m_data[14] = 0.2;
+	m_data[15] = 0.4;
+	m_data[16] = 0.6;
+	m_data[17] = 0.4;
+
+	m_data[18] = 0.0;
+	m_data[19] = 0.0;
+	m_data[20] = 0.2;
+	m_data[21] = 0.2;
+	m_data[22] = 0.4;
+	m_data[23] = 0.2;
+
+	m_data[24] = 0.0;
+	m_data[25] = 0.0;
+	m_data[26] = 0.0;
+	m_data[27] = 0.2;
+	m_data[28] = 0.2;
+	m_data[29] = 0.2;
+
+	m_data[30] = 0.0;
+	m_data[31] = 0.0;
+	m_data[32] = 0.0;
+	m_data[33] = 0.0;
+	m_data[34] = 0.2;
+	m_data[35] = 0.0;
+
+	#ifdef DEBUG
+	std::cout << "Image used: " << std::endl;
+	std::cout << std::setprecision(1) << std::fixed;
+	for (int y = 0; y < 6; y++) {
+		for (int x = 0; x < 6; x++) {
+			std::cout << m_data[6 * y + x] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	#endif
 }
 
 Image::~Image()
 {
-	if (m_data)
-		delete [] m_data;
+	delete [] m_data;
 }
 
 void Image::printError(int status)
@@ -47,7 +129,7 @@ void Image::readFitsImage()
 	fitsfile *fptr;
 	int status = 0;
 	int nfound, anynull;
-	long npixels, fpixel = 1, naxes[2];
+	long fpixel = 1, naxes[2];
 	float nullval = 0;
 
 	if ( fits_open_file(&fptr, m_name, READONLY, &status) )

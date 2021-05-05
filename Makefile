@@ -22,10 +22,10 @@ all : $(LINK_TARGET)
 	echo All done
 
 $(LINK_TARGET) : $(OBJS)
-	g++ -g -o $@ $^ -I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+	g++ -g -o $@ $^ -I $(INCLUDE_PATH) -I ./include -L $(LIB_PATH) $(LIBS)
 
 %.o : %.cpp
-	g++ -g -o $@ -c $< -I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+	g++ -g -O2 -Wall  -o $@ -c $< -I $(INCLUDE_PATH) -I ./include -L $(LIB_PATH) $(LIBS)
 
 clean :
 	rm -f $(REBUILDABLES)

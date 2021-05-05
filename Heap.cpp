@@ -1,8 +1,9 @@
 #include "include/Heap.h"
 
-Heap::Heap()
+Heap::Heap(long size)
+	: m_maxSize(size + 1)
 {
-	m_entries = new Pixel[1024];
+	m_entries = new Pixel[size + 1];
 }
 
 Heap::~Heap()
@@ -10,78 +11,43 @@ Heap::~Heap()
 	delete [] m_entries;
 }
 
-void Heap::resize()
-{
-	m_maxSize *= 2;
-	Pixel *temp = new Pixel[m_maxSize];
-
-	for (long i = 0; i < m_currSize; i++) {
-		temp[i] = m_entries[i];
-	}
-
-	delete [] m_entries;
-	m_entries = temp;
+void Heap::swapEntries(long a, long b) {
+	Pixel tmp = m_entries[a];
+	m_entries[a] = m_entries[b];
+	m_entries[b] = tmp;
 }
 
-void Heap::insert(Pixel *pixel)
-{
-	if (m_maxSize == m_currSize)
-		resize();
-
-	long index = m_currSize + 1;
-	Pixel *entry = m_entries + index;
-	float val = pixel->val();
-
-	while (index != 1) {
-		long upIndex = index /= 2;
-		Pixel *upEntry = m_entries + upIndex;
-
-		if (upEntry->val() >= val)
-			break;
-
-		*entry = *upEntry;
-		index = upIndex;
-		entry = upEntry;
+void Heap::insert(Pixel pixel) {
+	m_entries[++m_currSize] = pixel;
+	long index = m_currSize;
+	while (m_entries[index].val() > m_entries[index / 2].val()) {
+		swapEntries(index, index / 2);
+		index /= 2;
 	}
-
-	*entry = *pixel;
-	m_currSize += 1;
 }
 
-Pixel *Heap::remove()
-{
-	long index = 1;
-	Pixel *entry = top();
-	Pixel *last = m_entries + m_currSize;
-	Pixel root = *entry;
+void Heap::maxHeapify(long pos) {
+	if (pos > (m_currSize / 2) && pos <= m_currSize)
+		return;
 
-	while (true) {
-		index *= 2;
-		if (index > m_currSize)
-			break;
-
-		Pixel *downLeft = m_entries + index;
-
-		if (index < m_currSize) {
-			Pixel *downRight = m_entries + index + 1;
-
-			if (downRight->val() > downLeft->val()) {
-				downLeft += 1;
-				index += 1;
-			}
+	if (m_entries[pos].val() < m_entries[2 * pos].val()
+		|| m_entries[pos].val() < m_entries[2 * pos + 1].val()) {
+		if (m_entries[2 * pos].val() > m_entries[2 * pos + 1].val()) {
+			swapEntries(pos, 2 * pos);
+			maxHeapify(2 * pos);
+		} else {
+			swapEntries(pos, 2 * pos + 1);
+			maxHeapify(2 * pos + 1);
 		}
-
-		if (downLeft->val() <= last->val())
-			break;
-
-		*entry = *downLeft;
-		entry = downLeft;
 	}
+}
 
-	*entry = *last;
-	*last = root;
+Pixel Heap::remove()
+{
 
-	m_currSize -= 1;
-
-	return last;
+	Pixel root = top();
+	m_entries[1] = m_entries[m_currSize--];
+	if (m_currSize > 0)
+		maxHeapify(1);
+	return root;
 }

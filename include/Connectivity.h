@@ -1,6 +1,8 @@
 #ifndef CONNECT_H
 #define CONNECT_H
 
+#include "Debug.h"
+
 class Connectivity {
 
 public:

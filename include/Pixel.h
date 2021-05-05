@@ -1,6 +1,8 @@
 #ifndef PIXEL_H
 #define PIXEL_H
 
+#include "Debug.h"
+
 class Pixel
 {
 public:

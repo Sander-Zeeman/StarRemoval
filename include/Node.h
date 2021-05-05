@@ -5,6 +5,8 @@
 #define IN_QUEUE -2
 #define NO_PARENT -3
 
+#include "Debug.h"
+
 class Node
 {
 
@@ -27,6 +29,7 @@ private:
 	long m_area = 1;
 	float m_volume = 0;
 	float m_power = 0;
+
 };
 
 #endif

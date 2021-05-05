@@ -2,10 +2,12 @@
 #define IMAGE_H
 
 #include <fitsio.h>
-#include <iostream>
 #include <cstring>
 
-class Image {
+#include "Debug.h"
+
+class Image
+{
 
 public:
 	Image(const char *filename);
