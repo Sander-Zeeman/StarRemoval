@@ -19,15 +19,15 @@ public:
 	long size() { return m_size; }
 
 private:
+	void printError(int status);
+	void readImage();
+	void readFitsImage();
+
 	const char *m_name = nullptr;
 	float *m_data = nullptr;
 	int m_width = 0;
 	int m_height = 0;
 	long m_size = 0;
-
-	void printError(int status);
-	void readImage();
-	void readFitsImage();
 
 };
 

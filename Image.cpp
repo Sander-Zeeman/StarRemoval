@@ -1,28 +1,6 @@
 #include "include/Image.h"
 #include <iomanip>
 
-
-
-/*
- * 0.0 0.0 0.0 0.2 0.2 0.2
- * 0.0 0.0 0.2 0.2 0.4 0.2
- * 0.0 0.2 0.2 0.4 0.6 0.4
- * 0.0 0.0 0.2 0.2 0.4 0.2
- * 0.0 0.0 0.0 0.2 0.2 0.2
- * 0.0 0.0 0.0 0.0 0.2 0.0
- *
- * -3 0 0  13 13 13
- * 0  0 13 13 X3 13
- * 0  X 13 22 -X X3
- * 0  0 13 13 X3 13
- * 0  0 0  13 13 13
- * 0  0 0  0  13 0
- *
- *
- *
- */
-
-
 Image::Image(const char *filename)
 	: m_name(filename)
 {
@@ -87,6 +65,7 @@ Image::Image(const char *filename)
 	}
 	std::cout << std::endl;
 	#endif
+
 }
 
 Image::~Image()

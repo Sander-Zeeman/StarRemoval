@@ -4,6 +4,7 @@ LINK_TARGET = star_removal.out
 
 OBJS = \
   Connectivity.o \
+  Detector.o \
   Heap.o \
   Image.o \
   main.o \
@@ -19,7 +20,6 @@ LIBS = -lcfitsio
 REBUILDABLES = $(OBJS) $(LINK_TARGET)
 
 all : $(LINK_TARGET)
-	echo All done
 
 $(LINK_TARGET) : $(OBJS)
 	g++ -g -o $@ $^ -I $(INCLUDE_PATH) -I ./include -L $(LIB_PATH) $(LIBS)
@@ -29,4 +29,3 @@ $(LINK_TARGET) : $(OBJS)
 
 clean :
 	rm -f $(REBUILDABLES)
-	echo Clean done

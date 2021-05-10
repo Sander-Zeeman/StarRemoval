@@ -17,18 +17,19 @@ public:
 	MaxTree(Image *img);
 	~MaxTree();
 
+	Image *img() { return m_img; }
 	Node *nodes() { return m_nodes; }
+	void flood();
 
+private:
 	void initialize();
 	Pixel findStart();
-	void queueNeighbour(float val, int x, int y);
+	bool queueNeighbour(float val, int x, int y);
 	void queueNeighbours(Pixel pixel);
 	void mergeNodes(long toIndex, long fromIndex);
 	void descend(Pixel pixel);
 	void finishStack();
-	void flood();
 
-private:
 	Image *m_img = nullptr;
 	Node *m_root = nullptr;
 	Node *m_nodes = nullptr;

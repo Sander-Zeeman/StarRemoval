@@ -1,2 +1,2 @@
 #include <iostream>
-#define DEBUG 1
+#define DEBUG

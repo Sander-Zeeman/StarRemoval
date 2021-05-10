@@ -4,16 +4,11 @@ MaxTree::MaxTree(Image *img)
 {
 	m_img = img;
 	m_nodes = new Node[m_img->size()];
-	m_heap = new Heap(m_img->size());
-	m_connectivity = new Connectivity();
 }
 
 MaxTree::~MaxTree()
 {
-	delete  m_img;
 	delete [] m_nodes;
-	delete  m_heap;
-	delete  m_connectivity;
 }
 
 Pixel MaxTree::findStart()
@@ -34,7 +29,7 @@ Pixel MaxTree::findStart()
 	return minPixel;
 }
 
-void MaxTree::queueNeighbour(float val, int x, int y)
+bool MaxTree::queueNeighbour(float val, int x, int y)
 {
 	Pixel neighbour = Pixel(-1, x, y);
 	long neighbourIndex = neighbour.index(m_img->width());
@@ -49,8 +44,10 @@ void MaxTree::queueNeighbour(float val, int x, int y)
 			#ifdef DEBUG
 			std::cout << "Pixel at: " << neighbourIndex << " added" << std::endl;
 			#endif
+			return 1;
 		}
 	}
+	return 0;
 }
 
 void MaxTree::queueNeighbours(Pixel pixel)
@@ -74,11 +71,12 @@ void MaxTree::queueNeighbours(Pixel pixel)
 				continue;
 
 			// Used to quit after adding 1.
-			queueNeighbour(
+			if (queueNeighbour(
 				pixel.val(),
 				pixel.x() - radiusX + connX,
 				pixel.y() - radiusY + connY
-			);
+			))
+				return;
 		}
 	}
 }
@@ -159,6 +157,9 @@ void MaxTree::flood()
 	m_root = m_nodes + nextIndex;
 	m_root->setParent(NO_PARENT);
 
+	m_connectivity = new Connectivity();
+	m_heap = new Heap(m_img->size());
+
 	// Also insert this pixel in both the stack and heap.
 	m_stack.push(nextPixel);
 	m_heap->insert(nextPixel);
@@ -187,4 +188,7 @@ void MaxTree::flood()
 	}
 
 	finishStack();
+
+	delete  m_heap;
+	delete  m_connectivity;
 }
