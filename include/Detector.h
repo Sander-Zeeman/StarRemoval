@@ -1,3 +1,6 @@
+#ifndef DETECT_H
+#define DETECT_H
+
 #include "Debug.h"
 #include "Heap.h"
 #include "MaxTree.h"
@@ -20,7 +23,7 @@ private:
 
 	MaxTree *m_tree = nullptr;
 	std::vector<long> m_relevantIndices;
-	long *m_closestAncestors = nullptr;
+	long *m_closestSigAncestors = nullptr;
 	long *m_mainBranches = nullptr;
 	long *m_mainPowerBranches = nullptr;
 	long *m_objectIDs = nullptr;
@@ -28,3 +31,5 @@ private:
 	long m_objectCount = 0;
 
 };
+
+#endif

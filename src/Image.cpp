@@ -1,10 +1,28 @@
-#include "include/Image.h"
-#include <iomanip>
+#include "../include/Image.h"
 
 Image::Image(const char *filename)
 	: m_name(filename)
 {
 //	readImage();
+    debugImage();
+}
+
+Image::~Image()
+{
+	delete [] m_data;
+}
+
+void Image::debugImage()
+{
+/*
+    The following debug image is used:
+        0.0 0.0 0.0 0.2 0.2 0.2
+        0.0 0.0 0.2 0.2 0.4 0.2
+        0.0 0.2 0.2 0.4 0.6 0.4
+        0.0 0.0 0.2 0.2 0.4 0.2
+        0.0 0.0 0.0 0.2 0.2 0.2
+        0.0 0.0 0.0 0.0 0.2 0.0
+*/
 
 	m_width = 6;
 	m_height = 6;
@@ -55,24 +73,19 @@ Image::Image(const char *filename)
 	m_data[35] = 0.0;
 
 	#ifdef DEBUG
-	std::cout << "Image used: " << std::endl;
-	std::cout << std::setprecision(1) << std::fixed;
-	for (int y = 0; y < 6; y++) {
-		for (int x = 0; x < 6; x++) {
-			std::cout << m_data[6 * y + x] << " ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
+    	std::cout << "Image used: " << std::endl;
+    	std::cout << std::setprecision(1) << std::fixed;
+    	for (int y = 0; y < 6; y++) {
+    		for (int x = 0; x < 6; x++) {
+    			std::cout << m_data[6 * y + x] << " ";
+    		}
+    		std::cout << std::endl;
+    	}
+    	std::cout << std::endl;
 	#endif
-
 }
 
-Image::~Image()
-{
-	delete [] m_data;
-}
-/*
+#ifdef CFITSIO
 void Image::printError(int status)
 {
 	if (status) {
@@ -81,6 +94,7 @@ void Image::printError(int status)
 	}
 	return;
 }
+#endif
 
 void Image::readImage()
 {
@@ -96,13 +110,15 @@ void Image::readImage()
 
 	if (strcmp(extension, ".fits") == 0) {
 		// File is a FITS file.
-		readFitsImage();
-	} else {
-		// File has another extension, to be handled by OpenCV later.
-		std::cout << "Standard file read, to be handled." << std::endl;
+		#ifdef CFITSIO
+		    readFitsImage();
+		#else
+            std::cout << "CFITSIO not linked, yet a fits file was entered." << std::endl;
+		#endif
 	}
 }
 
+#ifdef CFITSIO
 void Image::readFitsImage()
 {
 	fitsfile *fptr;
@@ -131,4 +147,4 @@ void Image::readFitsImage()
 
 	return;
 }
-*/
+#endif

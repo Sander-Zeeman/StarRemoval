@@ -13,9 +13,10 @@ public:
 
 	bool isEmpty() { return m_currSize == 0; }
 	long size() { return m_currSize; }
+	Pixel top() { return m_entries[1]; }
+
 	void insert(Pixel pixel);
 	Pixel remove();
-	Pixel top() { return m_entries[1]; }
 
 private:
 	void maxHeapify(long pos);

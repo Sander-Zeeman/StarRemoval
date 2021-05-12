@@ -3,14 +3,14 @@
 LINK_TARGET = star_removal.out
 
 OBJS = \
-  Connectivity.o \
-  Detector.o \
-  Heap.o \
-  Image.o \
-  main.o \
-  MaxTree.o \
-  Node.o \
-  Pixel.o
+  out/Connectivity.o \
+  out/Detector.o \
+  out/Heap.o \
+  out/Image.o \
+  out/main.o \
+  out/MaxTree.o \
+  out/Node.o \
+  out/Pixel.o
 
 INCLUDE_PATH = /usr/local/include/cfitsio
 LIB_PATH = /usr/local/lib
@@ -22,10 +22,10 @@ REBUILDABLES = $(OBJS) $(LINK_TARGET)
 all : $(LINK_TARGET)
 
 $(LINK_TARGET) : $(OBJS)
-	g++ -g -o $@ $^ -I ./include #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+	g++ -g -o $@ $^ #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
 
-%.o : %.cpp
-	g++ -g -O2 -Wall  -o $@ -c $< -I ./include #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+out/%.o : src/%.cpp
+	g++ -g -O2 -Wall -o $@ -c $< #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
 
 clean :
 	rm -f $(REBUILDABLES)

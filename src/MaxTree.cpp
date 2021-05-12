@@ -1,4 +1,4 @@
-#include "include/MaxTree.h"
+#include "../include/MaxTree.h"
 
 MaxTree::MaxTree(Image *img)
 {
@@ -40,12 +40,8 @@ bool MaxTree::queueNeighbour(float val, int x, int y)
 		neighbourNode->setParent(IN_QUEUE);
 		m_heap->insert(neighbour);
 
-		if (neighbour.val() > val) {
-			#ifdef DEBUG
-			std::cout << "Pixel at: " << neighbourIndex << " added" << std::endl;
-			#endif
+		if (neighbour.val() > val)
 			return 1;
-		}
 	}
 	return 0;
 }
@@ -70,7 +66,6 @@ void MaxTree::queueNeighbours(Pixel pixel)
 			if (!m_connectivity->check(connX, connY))
 				continue;
 
-			// Used to quit after adding 1.
 			if (queueNeighbour(
 				pixel.val(),
 				pixel.x() - radiusX + connX,
@@ -95,10 +90,6 @@ void MaxTree::mergeNodes(long toIndex, long fromIndex)
 
 	float volumeChange = delta * fromNode->area();
 	toNode->setVolume(toNode->volume() + fromNode->volume() + volumeChange);
-
-	#ifdef DEBUG
-	std::cout << "Node at: " << fromIndex << " pointed to: " << toIndex << std::endl;
-	#endif
 }
 
 void MaxTree::descend(Pixel pixel)
@@ -117,9 +108,6 @@ void MaxTree::descend(Pixel pixel)
 	long oldIndex = oldTop.index(m_img->width());
 	long newIndex = newTop.index(m_img->width());
 
-	#ifdef DEBUG
-	std::cout << "DESCEND: " << oldIndex << " -> " << newIndex << std::endl;
-	#endif
 	m_nodes[oldIndex].setParent(newIndex);
 	mergeNodes(newIndex, oldIndex);
 }
@@ -135,9 +123,6 @@ void MaxTree::finishStack()
 		long oldIndex = oldTop.index(m_img->width());
 		long newIndex = newTop.index(m_img->width());
 
-#ifdef DEBUG
-		std::cout << "STACK_FINISH: " << oldIndex << " -> " << newIndex << std::endl;
-#endif
 		m_nodes[oldIndex].setParent(newIndex);
 		mergeNodes(newIndex, oldIndex);
 	}
@@ -150,7 +135,7 @@ void MaxTree::flood()
 	long nextIndex = nextPixel.index(m_img->width());
 
 	#ifdef DEBUG
-	std::cout << "Minimum pixel at: " << nextIndex << " with value: " << nextPixel.val() << std::endl;
+	std::cout << "Minimum pixel at: " << nextIndex << " with value: " << nextPixel.val() << std::endl << std::endl;
 	#endif
 
 	// Set this pixel to be the root of our tree.

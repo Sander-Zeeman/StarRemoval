@@ -1,4 +1,4 @@
-#include "include/Heap.h"
+#include "../include/Heap.h"
 
 Heap::Heap(long size)
 	: m_maxSize(size + 1)

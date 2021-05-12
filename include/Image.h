@@ -1,8 +1,12 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-//#include <fitsio.h>
+#ifdef CFITSIO
+    #include <fitsio.h>
+#endif
+
 #include <cstring>
+#include <iomanip>
 
 #include "Debug.h"
 
@@ -19,9 +23,12 @@ public:
 	long size() { return m_size; }
 
 private:
-	void printError(int status);
+    void debugImage();
 	void readImage();
-	void readFitsImage();
+	#ifdef CFITSIO
+	    void printError(int status);
+	    void readFitsImage();
+    #endif
 
 	const char *m_name = nullptr;
 	float *m_data = nullptr;
