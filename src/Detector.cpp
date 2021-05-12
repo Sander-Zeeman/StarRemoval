@@ -44,12 +44,12 @@ void Detector::findRelevantNodes()
 		heap->remove().index(img->width()));
 }
 #ifdef DEBUG
-	std::cout << "Number of relevant indices found: " << m_relevantIndices.size() << " at indices: ";
+	std::cout << m_relevantIndices.size() << " relevant indices found: ";
 
     for (auto i : m_relevantIndices) {
         std::cout << i << ", ";
     }
-    std::cout << std::endl << std::endl;;
+    std::cout << std::endl;
 #endif
 
 	delete heap;
@@ -72,13 +72,20 @@ void Detector::findSignificantNodes()
         if (true) {
             nodes[idx].setSignificant(true);
             m_significantNodeCount++;
-            #ifdef DEBUG
-                std::cout << "Node at " << idx << " is significant!" << std::endl;
-            #endif
             //updateMainBranch(parentIdx);
         }
     }
+
     #ifdef DEBUG
+        std::cout << m_significantNodeCount << " significant nodes at: ";
+
+        for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
+            unsigned long idx = m_relevantIndices[i];
+            if (m_tree->nodes()[idx].isSignificant()) {
+                std::cout << idx << ", ";
+            }
+        }
+
         std::cout << std::endl;
     #endif
 }

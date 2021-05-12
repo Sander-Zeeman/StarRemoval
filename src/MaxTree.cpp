@@ -86,7 +86,7 @@ void MaxTree::mergeNodes(long toIndex, long fromIndex)
 	float delta = m_img->data()[fromIndex] - m_img->data()[toIndex];
 
 	float powerChange = delta * (2 * fromNode->volume() + delta * fromNode->area());
-	toNode->setVolume(toNode->power() + fromNode->power() + powerChange);
+	toNode->setPower(toNode->power() + fromNode->power() + powerChange);
 
 	float volumeChange = delta * fromNode->area();
 	toNode->setVolume(toNode->volume() + fromNode->volume() + volumeChange);
