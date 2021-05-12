@@ -3,7 +3,7 @@
 #include "include/MaxTree.h"
 #include "include/Detector.h"
 
-//Descend ruins this
+//Descend ruins this.
 
 int main(int argc, char *argv[])
 {

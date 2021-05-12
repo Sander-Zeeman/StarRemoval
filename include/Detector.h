@@ -1,3 +1,5 @@
+#include "Debug.h"
+#include "Heap.h"
 #include "MaxTree.h"
 
 #include <vector>
@@ -17,7 +19,6 @@ private:
 	void markIDs();
 
 	MaxTree *m_tree = nullptr;
-	uint8_t m_flags = 0;
 	std::vector<long> m_relevantIndices;
 	long *m_closestAncestors = nullptr;
 	long *m_mainBranches = nullptr;

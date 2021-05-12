@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <fitsio.h>
+//#include <fitsio.h>
 #include <cstring>
 
 #include "Debug.h"

@@ -72,7 +72,7 @@ Image::~Image()
 {
 	delete [] m_data;
 }
-
+/*
 void Image::printError(int status)
 {
 	if (status) {
@@ -131,3 +131,4 @@ void Image::readFitsImage()
 
 	return;
 }
+*/
