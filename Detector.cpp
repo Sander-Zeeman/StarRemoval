@@ -16,17 +16,12 @@ Detector::~Detector()
 
 void Detector::findRelevantNodes()
 {
-	
-}
-
-void Detector::findSignificantNodes()
-{
 	Image *img = m_tree->img();
 	Heap *heap = new Heap(m_tree->img()->size());
 
 	for (int y = 0; y < img->height(); y++) {
 		for (int x = 0; x < img->width(); x++) {
-			Pixel pixel = Pixel(-1, x, y);
+			Pixel pixel = Pixel(img->data()[x + img->width() * y], x, y);
 			long index = pixel.index(img->width());
 			long parentIndex = m_tree->nodes()[index].parent();
 
@@ -41,14 +36,24 @@ void Detector::findSignificantNodes()
 		}
 	}
 
-	while (!heap->isEmpty())
-		m_relevantIndices.insert(m_relevantIndices.begin(), heap->remove().index(img->width()));
-
+	while (!heap->isEmpty()){
+		m_relevantIndices.insert(m_relevantIndices.begin(),
+		heap->remove().index(img->width()));
+}
 #ifdef DEBUG
 	std::cout << "Number of relevant indices found: " << m_relevantIndices.size() << std::endl;
+
+    for (auto i : m_relevantIndices) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 #endif
 
 	delete heap;
+}
+
+void Detector::findSignificantNodes()
+{
 }
 
 void Detector::findObjects()

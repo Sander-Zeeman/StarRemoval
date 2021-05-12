@@ -3,8 +3,6 @@
 #include "include/MaxTree.h"
 #include "include/Detector.h"
 
-//Descend ruins this.
-
 int main(int argc, char *argv[])
 {
 	Image *img = new Image(argv[1]);

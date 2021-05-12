@@ -20,7 +20,8 @@ void Heap::swapEntries(long a, long b) {
 void Heap::insert(Pixel pixel) {
 	m_entries[++m_currSize] = pixel;
 	long index = m_currSize;
-	while (m_entries[index].val() > m_entries[index / 2].val()) {
+	while (index != 1 && m_entries[index].val() > m_entries[index /
+	2].val()) {
 		swapEntries(index, index / 2);
 		index /= 2;
 	}
