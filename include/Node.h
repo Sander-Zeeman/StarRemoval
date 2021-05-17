@@ -36,13 +36,14 @@ public:
 	void setNoMove(bool b) { setFlag(b, 64); }
 
 	long parent() { return m_parent; }
+	float height() { return m_height; }
 	long area() { return m_area; }
-	float volume() { return m_volume; }
+	float volume() { return m_area * m_height; }
 	float power() { return m_power; }
 
 	void setParent(long index) { m_parent = index; }
 	void setArea(long area) { m_area = area; }
-	void setVolume(float volume) { m_volume = volume; }
+	void setHeight(float height) { m_height = height; }
 	void setPower(float power) { m_power = power; }
 
 private:
@@ -53,7 +54,7 @@ private:
 	uint8_t m_flags = 0;
 	long m_parent = UNASSIGNED;
 	long m_area = 1;
-	float m_volume = 0;
+	float m_height = 0;
 	float m_power = 0;
 
 };

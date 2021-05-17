@@ -6,6 +6,7 @@
 #include "MaxTree.h"
 
 #include <vector>
+#include <algorithm>
 
 class Detector {
 
@@ -13,10 +14,13 @@ public:
 	Detector(MaxTree *tree);
 	~Detector();
 
+    std::vector<long> relevantIndices() { return m_relevantIndices; }
+
 	void objectDetection();
 
 private:
 	void findRelevantNodes();
+    void updateMainBranch(long idx);
 	void findSignificantNodes();
 	void findObjects();
 	void markIDs();

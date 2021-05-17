@@ -10,22 +10,22 @@ OBJS = \
   out/main.o \
   out/MaxTree.o \
   out/Node.o \
-  out/Pixel.o
+  out/Pixel.o \
+  out/Timer.o
 
-INCLUDE_PATH = /usr/local/include/cfitsio
-LIB_PATH = /usr/local/lib
+CFITSIO = -I /usr/local/include/cfitsio -lcfitsio
+LIBS = -L /usr/local/lib
 
-LIBS = -lcfitsio
 
 REBUILDABLES = $(OBJS) $(LINK_TARGET)
 
 all : $(LINK_TARGET)
 
 $(LINK_TARGET) : $(OBJS)
-	g++ -g -o $@ $^ #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+	g++ -g -o $@ $^ $(LIBS) $(CFITSIO)
 
 out/%.o : src/%.cpp
-	g++ -g -O2 -Wall -o $@ -c $< #-I $(INCLUDE_PATH) -L $(LIB_PATH) $(LIBS)
+	g++ -g -O2 -Wall -o $@ -c $< $(LIBS) $(CFITSIO)
 
 clean :
 	rm -f $(REBUILDABLES)

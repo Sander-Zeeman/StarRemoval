@@ -1,10 +1,19 @@
 #include "../include/Image.h"
 
-Image::Image(const char *filename)
+Image::Image(char *filename)
 	: m_name(filename)
 {
-//	readImage();
-    debugImage();
+    #ifdef TIME
+        Timer *t = new Timer();
+    #endif
+
+	readImage();
+
+	#ifdef TIME
+        std::cout << "Reading the image took ";
+        delete t;
+        std::cout << std::endl << std::endl;
+	#endif
 }
 
 Image::~Image()
@@ -85,6 +94,58 @@ void Image::debugImage()
 	#endif
 }
 
+#ifdef OPENCV
+void Image::show()
+{
+    cv::Mat image(m_height, m_width, CV_32F, m_data);
+    cv::imshow("Image", image);
+    cv::waitKey(0);
+}
+#endif
+
+#ifdef CFITSIO
+void Image::writeFitsImage()
+{
+    fitsfile *fptr;
+    int status = 0;
+
+    char *name = m_name;
+    while (*name != '.')
+        name++;
+    *name = '\0';
+    char *filename = strcat(m_name, "_modified.fits");
+    int bitpix = FLOAT_IMG;
+    long naxis = 2;
+    long naxes[2] = {m_width, m_height};
+
+    remove(filename);
+
+    if (fits_create_file(&fptr, filename, &status))
+        printError(status);
+
+    if (fits_create_img(fptr, bitpix, naxis, naxes, &status))
+        printError(status);
+
+    if (fits_write_img(fptr, TFLOAT, 1, m_size, m_data, &status))
+        printError(status);
+
+    if (fits_close_file(fptr, &status))
+        printError(status);
+}
+#endif
+
+void Image::writeImage()
+{
+	if (strcmp(m_extension, ".fits") == 0) {
+		#ifdef CFITSIO
+		    writeFitsImage();
+		#endif
+	} else {
+        exit(1);
+	}
+}
+
+
 #ifdef CFITSIO
 void Image::printError(int status)
 {
@@ -99,24 +160,68 @@ void Image::printError(int status)
 void Image::readImage()
 {
 	// Find the extension of the given filename, so we know how to read it.
-	const char *extension;
-	extension = strrchr(m_name, '.');
+	m_extension = strrchr(m_name, '.');
 
 	// No extension was found.
-	if (!extension) {
+	if (!m_extension) {
 		std::cout << "ERROR: No file extension found" << std::endl;
 		exit(1);
 	}
 
-	if (strcmp(extension, ".fits") == 0) {
+	if (strcmp(m_extension, ".fits") == 0) {
 		// File is a FITS file.
 		#ifdef CFITSIO
 		    readFitsImage();
 		#else
             std::cout << "CFITSIO not linked, yet a fits file was entered." << std::endl;
+            exit(1);
 		#endif
+	} else {
+        // File has another format.
+        #ifdef OPENCV
+            readCVImage();
+        #else
+            std::cout << "OPENCV not linked, yet the given file is not a fits or debug file." << std::endl;
+            exit(1);
+        #endif
 	}
 }
+
+#ifdef OPENCV
+void Image::readCVImage()
+{
+    cv::Mat image =
+    cv::imread("/home/sander/Documents/Projects/StarRemoval/testImg.png");
+
+    m_width = image.cols;
+    m_height = image.rows;
+    m_size = image.total();
+    m_data = new float[m_size];
+
+    for (int i = 0; i < m_height; i++) {
+        for (int j = 0; j < m_width; j++) {
+            m_data[i * m_width + j] = image.at<float>(i * m_width + j);
+        }
+    }
+
+    cv::Mat newImg(m_height, m_width, CV_32F, image.data);
+
+	#ifdef DEBUG
+    	std::cout << "Image used: " << std::endl;
+    	std::cout << std::setprecision(1) << std::fixed;
+    	for (int y = 0; y < m_height; y++) {
+    		for (int x = 0; x < m_width; x++) {
+    			std::cout << m_data[m_width * y + x] << " ";
+    		}
+    		std::cout << std::endl;
+    	}
+    	std::cout << std::endl;
+	#endif
+
+    cv::imshow("Image", newImg);
+    cv::waitKey(0);
+}
+#endif
 
 #ifdef CFITSIO
 void Image::readFitsImage()
@@ -124,7 +229,7 @@ void Image::readFitsImage()
 	fitsfile *fptr;
 	int status = 0;
 	int nfound, anynull;
-	long fpixel = 1, naxes[2];
+	long naxes[2];
 	float nullval = 0;
 
 	if ( fits_open_file(&fptr, m_name, READONLY, &status) )
@@ -139,7 +244,7 @@ void Image::readFitsImage()
 	m_size  = m_width * m_height;
 	m_data = new float[m_size];
 
-	if ( fits_read_img(fptr, TFLOAT, fpixel, m_size, &nullval, m_data, &anynull, &status) )
+	if ( fits_read_img(fptr, TFLOAT, 1, m_size, &nullval, m_data, &anynull, &status) )
 		printError( status );
 
 	if ( fits_close_file(fptr, &status) )

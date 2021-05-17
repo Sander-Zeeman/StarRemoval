@@ -4,6 +4,9 @@ MaxTree::MaxTree(Image *img)
 {
 	m_img = img;
 	m_nodes = new Node[m_img->size()];
+    for (long i = 0; i < img->size(); i++) {
+        m_nodes[i].setHeight(img->data()[i]);
+    }
 }
 
 MaxTree::~MaxTree()
@@ -78,6 +81,9 @@ void MaxTree::queueNeighbours(Pixel pixel)
 
 void MaxTree::mergeNodes(long toIndex, long fromIndex)
 {
+    // My volume definition is the area * the value, as all pixels in a node have the same value.
+    // Still unsure what power means
+
 	Node *toNode = m_nodes + toIndex;
 	Node *fromNode = m_nodes + fromIndex;
 
@@ -87,9 +93,6 @@ void MaxTree::mergeNodes(long toIndex, long fromIndex)
 
 	float powerChange = delta * (2 * fromNode->volume() + delta * fromNode->area());
 	toNode->setPower(toNode->power() + fromNode->power() + powerChange);
-
-	float volumeChange = delta * fromNode->area();
-	toNode->setVolume(toNode->volume() + fromNode->volume() + volumeChange);
 }
 
 void MaxTree::descend(Pixel pixel)

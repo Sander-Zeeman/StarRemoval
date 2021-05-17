@@ -8,6 +8,8 @@ Detector::Detector(MaxTree *tree)
     for (long i = 0; i < size; i++) {
         m_closestSigAncestors[i] = NO_PARENT;
     }
+
+	m_mainBranches = new long[size];
 	m_objectIDs = new long[size];
 }
 
@@ -19,6 +21,10 @@ Detector::~Detector()
 
 void Detector::findRelevantNodes()
 {
+    #ifdef TIME
+        Timer *t = new Timer();
+    #endif
+
 	Image *img = m_tree->img();
 	Heap *heap = new Heap(m_tree->img()->size());
 
@@ -28,35 +34,57 @@ void Detector::findRelevantNodes()
 			long index = pixel.index(img->width());
 			long parentIndex = m_tree->nodes()[index].parent();
 
-			if (
-				m_tree->nodes() + index == m_tree->root() ||
-				img->data()[index] == img->data()[parentIndex]
-			) {
+			if ( m_tree->nodes() + index == m_tree->root() || img->data()[index] == img->data()[parentIndex] )
 				continue;
-			}
 
 			heap->insert(pixel);
 		}
 	}
 
-	while (!heap->isEmpty()){
-		m_relevantIndices.insert(m_relevantIndices.begin(),
-		heap->remove().index(img->width()));
-}
-#ifdef DEBUG
-	std::cout << m_relevantIndices.size() << " relevant indices found: ";
+	while (!heap->isEmpty())
+		m_relevantIndices.push_back(heap->remove().index(img->width()));
 
-    for (auto i : m_relevantIndices) {
-        std::cout << i << ", ";
-    }
-    std::cout << std::endl;
-#endif
+    std::reverse(m_relevantIndices.begin(), m_relevantIndices.end());
+
+    #ifdef DEBUG
+    	std::cout << m_relevantIndices.size() << " relevant indices found: " << std::endl;
+    #endif
+
+    #ifdef TIME
+        std::cout << "Detecting relevant indices took: ";
+        delete t;
+        std::cout << std::endl << std::endl;
+    #endif
 
 	delete heap;
 }
 
+void Detector::updateMainBranch(long idx)
+{
+    if (m_closestSigAncestors[idx] == NO_PARENT)
+        return;
+
+    Node *nodes = m_tree->nodes();
+
+    long ancestorIdx = m_closestSigAncestors[idx];
+
+    if (nodes[idx].hasSigDescendent()) {
+        long currSigDescendentIdx = m_mainBranches[ancestorIdx];
+        if (nodes[currSigDescendentIdx].area() < nodes[idx].area()) {
+            m_mainBranches[ancestorIdx] = idx;
+        }
+    } else {
+        nodes[ancestorIdx].setHasSigDescendent(true);
+        m_mainBranches[ancestorIdx] = idx;
+    }
+}
+
 void Detector::findSignificantNodes()
 {
+    #ifdef TIME
+        Timer *t = new Timer();
+    #endif
+
     Node *nodes = m_tree->nodes();
 
     for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
@@ -69,62 +97,74 @@ void Detector::findSignificantNodes()
             m_closestSigAncestors[idx] = m_closestSigAncestors[parentIdx];
         }
 
-        if (true) {
-            nodes[idx].setSignificant(true);
-            m_significantNodeCount++;
-            //updateMainBranch(parentIdx);
-        }
+        nodes[idx].setSignificant(true);
+        m_significantNodeCount++;
+        updateMainBranch(parentIdx);
     }
 
     #ifdef DEBUG
-        std::cout << m_significantNodeCount << " significant nodes at: ";
+        std::cout << m_significantNodeCount << " significant nodes at: " << std::endl;
+    #endif
 
-        for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
-            unsigned long idx = m_relevantIndices[i];
-            if (m_tree->nodes()[idx].isSignificant()) {
-                std::cout << idx << ", ";
-            }
-        }
-
-        std::cout << std::endl;
+    #ifdef TIME
+        std::cout << "Detecting significant nodes took: ";
+        delete t;
+        std::cout << std::endl << std::endl;
     #endif
 }
 
 void Detector::findObjects()
 {
+    #ifdef TIME
+        Timer *t = new Timer();
+    #endif
+
     Node *nodes = m_tree->nodes();
 
     for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
-        unsigned long idx = m_relevantIndices[i];
+        long idx = m_relevantIndices[i];
+        long parentIdx = m_closestSigAncestors[idx];
+
         if (!nodes[idx].isSignificant())
             continue;
 
-        if (m_closestSigAncestors[idx] == NO_PARENT) {
+        if (parentIdx == NO_PARENT) {
             nodes[idx].setObject(true);
             m_objectCount++;
             continue;
         }
 
-        // Does not yet account for nested objects.
+        if (m_mainBranches[parentIdx] != idx) {
+            nodes[idx].setObject(true);
+            m_objectCount++;
+            continue;
+        }
     }
 
     #ifdef DEBUG
-        std::cout << m_objectCount << " objects at nodes: ";
+        std::cout << m_objectCount << " objects at nodes: " << std::endl;
+    #endif
 
-        for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
-            unsigned long idx = m_relevantIndices[i];
-            if (m_tree->nodes()[idx].isObject()) {
-                std::cout << idx << ", ";
-            }
-        }
-
+    #ifdef TIME
+        std::cout << "Detecting objects took: ";
+        delete t;
         std::cout << std::endl << std::endl;
     #endif
 }
 
 void Detector::markIDs()
 {
+    #ifdef TIME
+        Timer *t = new Timer();
+    #endif
 
+
+
+    #ifdef TIME
+        std::cout << "Marking IDs took: ";
+        delete t;
+        std::cout << std::endl << std::endl;
+    #endif
 }
 
 void Detector::objectDetection()
