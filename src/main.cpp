@@ -16,56 +16,63 @@ void printNode(MaxTree *tree, long idx)
 	          << std::endl;
 }
 
+long findFirstNonSig(Node *nodes, long *cache, long idx)
+{
+    if (nodes[idx].parent() == NO_PARENT || !nodes[idx].isSignificant())
+        return idx;
+
+    if (cache[idx] != -1)
+        return cache[idx];
+
+    long parentIdx = nodes[idx].parent();
+    cache[idx] = findFirstNonSig(nodes, cache, parentIdx);
+
+    return cache[idx];
+}
+
 int main(int argc, char *argv[])
 {
-    #ifdef TIME
-        Timer *t;
-    #endif
-
-
     // Reading the image
-	#ifdef TIME
-        t = new Timer();
-    #endif
-
     Image *img = new Image((char*)argv[1]);
 
 	#ifdef DEBUG
     	std::cout << "Width: " << img->width() << ", Height: " << img->height() << ", Size: " << img->size() << std::endl << std::endl;
     #endif
 
-	#ifdef TIME
-    	std::cout << "Reading the image took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
-	#endif
-
     // Building the MaxTree
 	MaxTree *tree = new MaxTree(img);
 	tree->flood();
 
     // Object detection.
-    #ifdef TIME
-        t = new Timer();
-    #endif
-
 	Detector *detect = new Detector(tree);
 	detect->objectDetection();
 
     #ifdef TIME
-	    std::cout << "Object detection took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
-	#endif
+        Timer *t = new Timer();
+    #endif
+    long *cache = new long[img->size()];
+    for (long i = 0; i < img->size(); i++) {
+        cache[i] = -1;
+    }
 
+    Node *nodes = tree->nodes();
     for (int y = 0; y < img->height(); y++) {
         for (int x = 0; x < img->width(); x++) {
-            if (tree->nodes()[y * img->width() + x].isSignificant()) {
-                img->data()[y * img->width() + x] = 0;
+            if (nodes[y * img->width() + x].isSignificant() && img->data()[y * img->width() + x] > 0.5) {
+                long idx = y * img->width() + x;
+                std::cout << idx << std::endl;
+                img->data()[idx] = img->data()[findFirstNonSig(nodes, cache, idx)];
             }
         }
     }
+    delete [] cache;
+
     img->writeImage();
+    #ifdef TIME
+        std::cout << "Modifying output image took ";
+        delete t;
+        std::cout << std::endl << std::endl;
+    #endif
 
 	delete detect;
 	delete tree;
