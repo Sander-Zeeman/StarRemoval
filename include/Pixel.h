@@ -13,12 +13,12 @@ public:
 	float val() { return m_val; }
 	int x() { return m_x; }
 	int y() { return m_y; }
-	long index(int width) { return m_y * width + m_x; }
+	long index(int width) { return static_cast<long>(m_y * width + m_x); }
 
 	void setVal(float val) { m_val = val; }
 	void setLocation(long index, int width) {
-		m_x = index % width;
-		m_y = index / width;
+		m_x = static_cast<int>(index % width);
+		m_y = static_cast<int>(index / width);
 	}
 
 private:

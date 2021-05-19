@@ -9,8 +9,13 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2) {
+        std::cout << "Expecting a file as argument!" << std::endl;
+        exit(1);
+    }
+
     // Reading the image
-    Image *img = new Image((char*)argv[1]);
+    Image *img = new Image(static_cast<char*>(argv[1]));
 
 	#ifdef DEBUG
     	std::cout << "Width: " << img->width() << ", Height: " << img->height() << ", Size: " << img->size() << std::endl << std::endl;
@@ -34,7 +39,7 @@ int main(int argc, char *argv[])
             if (!nodes[idx].isSignificant())
                 continue;
 
-            Point p(nodes[idx].area(), img->data()[idx]);
+            Point p(static_cast<float>(nodes[idx].area()), img->data()[idx]);
             points.push_back(p);
         }
     }

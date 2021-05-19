@@ -37,7 +37,7 @@ public:
 	long parent() { return m_parent; }
 	float height() { return m_height; }
 	long area() { return m_area; }
-	float volume() { return m_area * m_height; }
+	float volume() { return static_cast<float>(m_area) * m_height; }
 	float power() { return m_power; }
 
 	void setParent(long index) { m_parent = index; }
@@ -46,15 +46,15 @@ public:
 	void setPower(float power) { m_power = power; }
 
 private:
-	void setFlag(bool b, short pos) { b ? setFlagTrue(pos) : setFlagFalse(pos); }
-	void setFlagFalse(short pos) { m_flags = ~(~m_flags | pos); }
-	void setFlagTrue(short pos) { m_flags |= pos; }
+	void setFlag(bool b, uint8_t pos) { b ? setFlagTrue(pos) : setFlagFalse(pos); }
+	void setFlagFalse(uint8_t pos) { m_flags = static_cast<uint8_t>(~(~m_flags | pos)); }
+	void setFlagTrue(uint8_t pos) { m_flags |= pos; }
 
 	uint8_t m_flags = 0;
 	long m_parent = UNASSIGNED;
 	long m_area = 1;
-	float m_height = 0;
-	float m_power = 0;
+	float m_height = 0.0f;
+	float m_power = 0.0f;
 };
 
 #endif

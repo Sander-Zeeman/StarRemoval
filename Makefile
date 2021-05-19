@@ -2,6 +2,13 @@
 
 LINK_TARGET = star_removal.out
 
+FLAGS = \
+  -O2 \
+  -pedantic \
+  -Wall \
+  -Wextra \
+  -Wconversion
+
 OBJS = \
   Detector.o \
   Heap.o \
@@ -15,13 +22,15 @@ LIBS = -L /usr/local/lib
 
 REBUILDABLES = $(addprefix out/, $(OBJS)) $(LINK_TARGET)
 
-all : $(LINK_TARGET)
+all : $(MKDIR_OUT) $(LINK_TARGET)
+
+$(MKDIR_OUT) : mkdir out
 
 $(LINK_TARGET) : $(addprefix out/, $(OBJS))
-	g++ -g -o $@ $^ $(LIBS) $(CFITSIO)
+	g++ -o $@ $^ $(LIBS) $(CFITSIO)
 
 out/%.o : src/%.cpp
-	g++ -g -O2 -Wall -o $@ -c $< $(LIBS) $(CFITSIO)
+	g++ $(FLAGS) -o $@ -c $< $(LIBS) $(CFITSIO)
 
 clean :
 	rm -f $(REBUILDABLES)
