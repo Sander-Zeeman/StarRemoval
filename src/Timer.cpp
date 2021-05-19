@@ -1,13 +1,23 @@
 #include "../include/Timer.h"
 
-Timer::Timer()
+TimerWrapper* TimerWrapper::m_wrapper = nullptr;
+
+TimerWrapper* TimerWrapper::TimerInstance()
 {
-    start = clock();
+   if (m_wrapper == nullptr)
+       m_wrapper = new TimerWrapper();
+
+   return m_wrapper;
 }
 
-Timer::~Timer()
-{
-    end = clock();
-    elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    std::cout << std::setprecision(5) << elapsed << " seconds.";
+void TimerWrapper::startTimer() {
+    timers.push(new Timer());
+}
+
+void TimerWrapper::stopTimer(const char *action) {
+    std::cout << action << " took ";
+    Timer *t = timers.top();
+    delete t;
+    timers.pop();
+    std::cout << std::endl << std::endl;
 }

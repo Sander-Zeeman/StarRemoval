@@ -1,14 +1,16 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "Timer.h"
-
 #include <ctime>
 #include <iostream>
+#include <stack>
 
 #define CFITSIO
-//#define OPENCV
 #define DEBUG
 #define TIME
+
+#ifdef TIME
+    #include "Timer.h"
+#endif
 
 #endif

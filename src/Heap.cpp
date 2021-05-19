@@ -45,7 +45,6 @@ void Heap::maxHeapify(long pos) {
 
 Pixel Heap::remove()
 {
-
 	Pixel root = top();
 	m_entries[1] = m_entries[m_currSize--];
 	if (m_currSize > 0)

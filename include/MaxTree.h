@@ -12,7 +12,6 @@
 
 class MaxTree
 {
-
 public:
 	MaxTree(Image *img);
 	~MaxTree();
@@ -34,7 +33,6 @@ private:
 	Image *m_img = nullptr;
 	Node *m_root = nullptr;
 	Node *m_nodes = nullptr;
-
 	std::stack<Pixel> m_stack;
 	Heap *m_heap = nullptr;
 	Connectivity *m_connectivity = nullptr;

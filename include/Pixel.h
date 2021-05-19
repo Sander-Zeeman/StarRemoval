@@ -6,9 +6,9 @@
 class Pixel
 {
 public:
-	Pixel();
-	Pixel(float val, int x, int y);
-	~Pixel();
+	Pixel() {};
+	Pixel(float val, int x, int y) : m_val(val), m_x(x), m_y(y) {};
+	~Pixel() {};
 
 	float val() { return m_val; }
 	int x() { return m_x; }

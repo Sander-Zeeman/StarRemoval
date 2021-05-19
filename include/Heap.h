@@ -6,7 +6,6 @@
 
 class Heap
 {
-
 public:
 	Heap(long size);
 	~Heap();
@@ -25,7 +24,6 @@ private:
 	Pixel *m_entries = nullptr;
 	long m_currSize = 0;
 	long m_maxSize = 0;
-
 };
 
 #endif

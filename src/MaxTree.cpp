@@ -133,16 +133,14 @@ void MaxTree::finishStack()
 
 void MaxTree::flood()
 {
-    #ifdef TIME
-        Timer *t = new Timer();
-    #endif
+    TimerWrapper::TimerInstance()->startTimer();
 
 	// Find the least bright pixel (and its index in our array) as our starting point.
 	Pixel nextPixel = findStart();
 	long nextIndex = nextPixel.index(m_img->width());
 
 	#ifdef DEBUG
-	std::cout << "Minimum pixel at: " << nextIndex << " with value: " << nextPixel.val() << std::endl << std::endl;
+	   std::cout << "Minimum pixel at: " << nextIndex << " with value: " << nextPixel.val() << std::endl << std::endl;
 	#endif
 
 	// Set this pixel to be the root of our tree.
@@ -184,9 +182,5 @@ void MaxTree::flood()
 	delete  m_heap;
 	delete  m_connectivity;
 
-    #ifdef TIME
-        std::cout << "Flooding the MaxTree took ";
-        delete t;
-        std::cout << std::endl << std::endl;
-    #endif
+    TimerWrapper::TimerInstance()->stopTimer("Flooding the MaxTree");
 }

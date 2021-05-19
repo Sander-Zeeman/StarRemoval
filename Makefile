@@ -3,25 +3,21 @@
 LINK_TARGET = star_removal.out
 
 OBJS = \
-  out/Connectivity.o \
-  out/Detector.o \
-  out/Heap.o \
-  out/Image.o \
-  out/main.o \
-  out/MaxTree.o \
-  out/Node.o \
-  out/Pixel.o \
-  out/Timer.o
+  Detector.o \
+  Heap.o \
+  Image.o \
+  main.o \
+  MaxTree.o \
+  Timer.o
 
 CFITSIO = -I /usr/local/include/cfitsio -lcfitsio
 LIBS = -L /usr/local/lib
 
-
-REBUILDABLES = $(OBJS) $(LINK_TARGET)
+REBUILDABLES = $(addprefix out/, $(OBJS)) $(LINK_TARGET)
 
 all : $(LINK_TARGET)
 
-$(LINK_TARGET) : $(OBJS)
+$(LINK_TARGET) : $(addprefix out/, $(OBJS))
 	g++ -g -o $@ $^ $(LIBS) $(CFITSIO)
 
 out/%.o : src/%.cpp

@@ -9,7 +9,6 @@
 #include <algorithm>
 
 class Detector {
-
 public:
 	Detector(MaxTree *tree);
 	~Detector();
@@ -29,11 +28,9 @@ private:
 	std::vector<long> m_relevantIndices;
 	long *m_closestSigAncestors = nullptr;
 	long *m_mainBranches = nullptr;
-	long *m_mainPowerBranches = nullptr;
 	long *m_objectIDs = nullptr;
 	long m_significantNodeCount = 0;
 	long m_objectCount = 0;
-
 };
 
 #endif

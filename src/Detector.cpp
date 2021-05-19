@@ -16,14 +16,13 @@ Detector::Detector(MaxTree *tree)
 Detector::~Detector()
 {
 	delete [] m_closestSigAncestors;
+    delete [] m_mainBranches;
 	delete [] m_objectIDs;
 }
 
 void Detector::findRelevantNodes()
 {
-    #ifdef TIME
-        Timer *t = new Timer();
-    #endif
+    TimerWrapper::TimerInstance()->startTimer();
 
 	Image *img = m_tree->img();
 	Heap *heap = new Heap(m_tree->img()->size());
@@ -47,16 +46,12 @@ void Detector::findRelevantNodes()
     std::reverse(m_relevantIndices.begin(), m_relevantIndices.end());
 
     #ifdef DEBUG
-    	std::cout << m_relevantIndices.size() << " relevant indices found: " << std::endl;
-    #endif
-
-    #ifdef TIME
-        std::cout << "Detecting relevant indices took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
+    	std::cout << m_relevantIndices.size() << " relevant indices found." << std::endl;
     #endif
 
 	delete heap;
+
+    TimerWrapper::TimerInstance()->stopTimer("Finding relevant indices");
 }
 
 void Detector::updateMainBranch(long idx)
@@ -81,9 +76,7 @@ void Detector::updateMainBranch(long idx)
 
 void Detector::findSignificantNodes()
 {
-    #ifdef TIME
-        Timer *t = new Timer();
-    #endif
+    TimerWrapper::TimerInstance()->startTimer();
 
     Node *nodes = m_tree->nodes();
 
@@ -103,21 +96,15 @@ void Detector::findSignificantNodes()
     }
 
     #ifdef DEBUG
-        std::cout << m_significantNodeCount << " significant nodes at: " << std::endl;
+        std::cout << m_significantNodeCount << " significant nodes at." << std::endl;
     #endif
 
-    #ifdef TIME
-        std::cout << "Detecting significant nodes took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
-    #endif
+    TimerWrapper::TimerInstance()->stopTimer("Finding significant nodes");
 }
 
 void Detector::findObjects()
 {
-    #ifdef TIME
-        Timer *t = new Timer();
-    #endif
+    TimerWrapper::TimerInstance()->startTimer();
 
     Node *nodes = m_tree->nodes();
 
@@ -142,36 +129,27 @@ void Detector::findObjects()
     }
 
     #ifdef DEBUG
-        std::cout << m_objectCount << " objects at nodes: " << std::endl;
+        std::cout << m_objectCount << " objects detected." << std::endl;
     #endif
 
-    #ifdef TIME
-        std::cout << "Detecting objects took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
-    #endif
+    TimerWrapper::TimerInstance()->stopTimer("Finding objects");
 }
 
 void Detector::markIDs()
 {
-    #ifdef TIME
-        Timer *t = new Timer();
-    #endif
-
-
-
-    #ifdef TIME
-        std::cout << "Marking IDs took: ";
-        delete t;
-        std::cout << std::endl << std::endl;
-    #endif
+    TimerWrapper::TimerInstance()->startTimer();
+    TimerWrapper::TimerInstance()->stopTimer("Marking IDs");
 }
 
 void Detector::objectDetection()
 {
+    TimerWrapper::TimerInstance()->startTimer();
+
 	findRelevantNodes();
 	findSignificantNodes();
 	findObjects();
 	// Movement?
 	markIDs();
+
+    TimerWrapper::TimerInstance()->stopTimer("Full object detection");
 }
