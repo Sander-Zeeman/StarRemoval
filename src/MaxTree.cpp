@@ -49,30 +49,47 @@ bool MaxTree::queueNeighbour(float val, int x, int y)
 	return 0;
 }
 
+void MaxTree::getBounds(
+    Pixel pixel,
+    int & radiusX,
+    int & radiusY,
+    int & xMin,
+    int & xMax,
+    int & yMin,
+    int & yMax
+)
+{
+    radiusX = m_connectivity->width() / 2;
+	radiusY = m_connectivity->height() / 2;
+
+    xMin = pixel.x() < radiusX ? radiusX - pixel.x() : 0;
+	yMin = pixel.y() < radiusY ? radiusY - pixel.y() : 0;
+
+	xMax =
+        pixel.x() + radiusX >= m_img->width()
+		    ? radiusX + m_img->width() - pixel.x() - 1
+		    : 2 * radiusX;
+
+	yMax =
+        pixel.y() + radiusY >= m_img->height()
+		    ? radiusY + m_img->height() - pixel.y() - 1
+		    : 2 * radiusY;
+}
+
 void MaxTree::queueNeighbours(Pixel pixel)
 {
-	int radiusX = m_connectivity->width() / 2;
-	int radiusY = m_connectivity->height() / 2;
+    int radiusX, radiusY, xMin, xMax, yMin, yMax;
+	getBounds(pixel, radiusX, radiusY, xMin, xMax, yMin, yMax);
 
-	int connXMin = pixel.x() < radiusX ? radiusX - pixel.x() : 0;
-	int connYMin = pixel.y() < radiusY ? radiusY - pixel.y() : 0;
-
-	int connXMax = pixel.x() + radiusX >= m_img->width() \
-		? radiusX + m_img->width() - pixel.x() - 1 \
-		: 2 * radiusX;
-	int connYMax = pixel.y() + radiusY >= m_img->height() \
-		? radiusY + m_img->height() - pixel.y() - 1 \
-		: 2 * radiusY;
-
-	for (int connY = connYMin; connY <= connYMax; connY++) {
-		for (int connX = connXMin; connX <= connXMax; connX++) {
-			if (!m_connectivity->check(connX, connY))
+	for (int offsetY = yMin; offsetY <= yMax; offsetY++) {
+		for (int offsetX = xMin; offsetX <= xMax; offsetX++) {
+			if (!m_connectivity->check(offsetX, offsetY))
 				continue;
 
 			if (queueNeighbour(
 				pixel.val(),
-				pixel.x() - radiusX + connX,
-				pixel.y() - radiusY + connY
+				pixel.x() - radiusX + offsetX,
+				pixel.y() - radiusY + offsetY
 			))
 				return;
 		}
@@ -90,7 +107,6 @@ void MaxTree::mergeNodes(long toIndex, long fromIndex)
 	toNode->setArea(toNode->area() + fromNode->area());
 
 	float delta = m_img->data()[fromIndex] - m_img->data()[toIndex];
-
 	float powerChange = delta * (2 * fromNode->volume() + delta * static_cast<float>(fromNode->area()));
 	toNode->setPower(toNode->power() + fromNode->power() + powerChange);
 }
@@ -117,7 +133,7 @@ void MaxTree::descend(Pixel pixel)
 
 void MaxTree::finishStack()
 {
-	// When we finish, the stack can still contain some pixels, we merge them all into a single node.
+	// When we finish, the stack can still contain some pixels, we string them together.
 	while (m_stack.size() > 1) {
 		Pixel oldTop = m_stack.top();
 		m_stack.pop();
@@ -138,7 +154,6 @@ void MaxTree::flood()
 	// Find the least bright pixel (and its index in our array) as our starting point.
 	Pixel nextPixel = findStart();
 	long nextIndex = nextPixel.index(m_img->width());
-
 	#ifdef DEBUG
 	   std::cout << "Minimum pixel at: " << nextIndex << " with value: " << nextPixel.val() << std::endl << std::endl;
 	#endif
@@ -157,12 +172,14 @@ void MaxTree::flood()
 	while (!m_heap->isEmpty()) {
 		Pixel currPixel = nextPixel;
 		queueNeighbours(currPixel);
+
 		nextPixel = m_heap->top();
 		if (nextPixel.val() > currPixel.val()) {
 			m_stack.push(nextPixel);
 			continue;
 		}
-		currPixel = m_heap->remove();
+
+        currPixel = m_heap->remove();
 		Pixel stackTop = m_stack.top();
 		long currIndex = currPixel.index(m_img->width());
 		long stackIndex = stackTop.index(m_img->width());
@@ -170,9 +187,11 @@ void MaxTree::flood()
 			m_nodes[currIndex].setParent(stackIndex);
 			m_nodes[stackIndex].setArea(m_nodes[stackIndex].area() + 1);
 		}
-		if (m_heap->isEmpty())
+
+        if (m_heap->isEmpty())
 			break;
-		nextPixel = m_heap->top();
+
+        nextPixel = m_heap->top();
 		if (nextPixel.val() < currPixel.val())
 			descend(nextPixel);
 	}

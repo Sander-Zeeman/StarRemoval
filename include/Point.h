@@ -18,8 +18,8 @@ public:
     };
 
 private:
-    float m_x { 0.0 };
-    float m_y { 0.0 };
+    float m_x { 0.0f };
+    float m_y { 0.0f };
 };
 
 #endif

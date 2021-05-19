@@ -17,10 +17,6 @@ int main(int argc, char *argv[])
     // Reading the image
     Image *img = new Image(static_cast<char*>(argv[1]));
 
-	#ifdef DEBUG
-    	std::cout << "Width: " << img->width() << ", Height: " << img->height() << ", Size: " << img->size() << std::endl << std::endl;
-    #endif
-
     // Building the MaxTree
 	MaxTree *tree = new MaxTree(img);
 	tree->flood();

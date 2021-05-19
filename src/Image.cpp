@@ -6,6 +6,10 @@ Image::Image(char *filename)
     TimerWrapper::TimerInstance()->startTimer();
 	readImage();
 	TimerWrapper::TimerInstance()->stopTimer("Reading the image");
+    #ifdef DEBUG
+        std::cout << "Width: " << m_width << ", Height: " << m_height << ", Size: " << m_size << std::endl << std::endl;
+    #endif
+
 }
 
 Image::~Image()
@@ -32,11 +36,11 @@ void Image::debugImage()
 	m_data = new float[36];
 
 	m_data[0] = 0.0f;
-    m_data[5] = 0.2f;
 	m_data[1] = 0.0f;
 	m_data[2] = 0.0f;
 	m_data[3] = 0.2f;
 	m_data[4] = 0.2f;
+    m_data[5] = 0.2f;
 
 	m_data[6] = 0.0f;
 	m_data[7] = 0.0f;
@@ -118,13 +122,8 @@ void Image::readImage()
 		#endif
 	} else {
         // File has another format.
-        #ifdef OPENCV
-            readCVImage();
-        #else
-            std::cout << "OPENCV not linked, yet the given file is not a fits or debug file." << std::endl;
-            exit(1);
-        #endif
-	}
+        exit(1);
+    }
 }
 
 #ifdef CFITSIO
@@ -147,6 +146,7 @@ void Image::writeFitsImage()
         name++;
     *name = '\0';
     char *filename = strcat(m_name, "_modified.fits");
+
     int bitpix = FLOAT_IMG;
     long naxes[2] = {m_width, m_height};
 

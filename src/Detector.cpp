@@ -25,7 +25,7 @@ void Detector::findRelevantNodes()
     TimerWrapper::TimerInstance()->startTimer();
 
 	Image *img = m_tree->img();
-	Heap *heap = new Heap(m_tree->img()->size());
+	Heap *heap = new Heap(img->size());
 
 	for (int y = 0; y < img->height(); y++) {
 		for (int x = 0; x < img->width(); x++) {
@@ -56,6 +56,7 @@ void Detector::findRelevantNodes()
 
 void Detector::updateMainBranch(long idx)
 {
+    // Not sure what's going on here yet.
     if (m_closestSigAncestors[idx] == NO_PARENT)
         return;
 
@@ -90,6 +91,7 @@ void Detector::findSignificantNodes()
             m_closestSigAncestors[idx] = m_closestSigAncestors[parentIdx];
         }
 
+        // Sig test should go here
         nodes[idx].setSignificant(true);
         m_significantNodeCount++;
         updateMainBranch(parentIdx);
@@ -138,6 +140,9 @@ void Detector::findObjects()
 void Detector::markIDs()
 {
     TimerWrapper::TimerInstance()->startTimer();
+
+    // Not sure if needed yet, as we only really care about stars.
+
     TimerWrapper::TimerInstance()->stopTimer("Marking IDs");
 }
 
