@@ -3,9 +3,7 @@
 Image::Image(char *filename)
 	: m_name(filename)
 {
-    TimerWrapper::TimerInstance()->startTimer();
 	readImage();
-	TimerWrapper::TimerInstance()->stopTimer("Reading the image");
     #ifdef DEBUG
         std::cout << "Width: " << m_width << ", Height: " << m_height << ", Size: " << m_size << std::endl << std::endl;
     #endif
@@ -92,6 +90,7 @@ void Image::debugImage()
 
 void Image::writeImage()
 {
+    TimerWrapper::TimerInstance()->startTimer();
 	if (strcmp(m_extension, ".fits") == 0) {
 		#ifdef CFITSIO
 		    writeFitsImage();
@@ -99,10 +98,13 @@ void Image::writeImage()
 	} else {
         exit(1);
 	}
+    TimerWrapper::TimerInstance()->stopTimer("Writing the image");
 }
 
 void Image::readImage()
 {
+    TimerWrapper::TimerInstance()->startTimer();
+
 	// Find the extension of the given filename, so we know how to read it.
 	m_extension = strrchr(m_name, '.');
 
@@ -124,6 +126,7 @@ void Image::readImage()
         // File has another format.
         exit(1);
     }
+    TimerWrapper::TimerInstance()->stopTimer("Reading the image");
 }
 
 #ifdef CFITSIO

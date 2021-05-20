@@ -1,3 +1,4 @@
+#include "../include/Clusterer.h"
 #include "../include/Debug.h"
 #include "../include/Image.h"
 #include "../include/MaxTree.h"
@@ -14,6 +15,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    TimerWrapper::TimerInstance()->startTimer();
+
     // Reading the image
     Image *img = new Image(static_cast<char*>(argv[1]));
 
@@ -25,6 +28,7 @@ int main(int argc, char *argv[])
 	Detector *detect = new Detector(tree);
 	detect->objectDetection();
 
+    TimerWrapper::TimerInstance()->startTimer();
     // Creating points for clustering.
     Node *nodes = tree->nodes();
     std::vector<Point> points;
@@ -39,12 +43,19 @@ int main(int argc, char *argv[])
             points.push_back(p);
         }
     }
+    TimerWrapper::TimerInstance()->stopTimer("Creating points for clustering");
+
+    Clusterer *clusterer = new Clusterer(points);
+    clusterer->cluster();
 
     // Writing the modified image.
     img->writeImage();
 
+    delete clusterer;
 	delete detect;
 	delete tree;
 	delete img;
+
+    TimerWrapper::TimerInstance()->stopTimer("The full program");
 	return 0;
 }

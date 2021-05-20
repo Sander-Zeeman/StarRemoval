@@ -10,6 +10,7 @@ FLAGS = \
   -Wconversion
 
 OBJS = \
+  Clusterer.o \
   Detector.o \
   Heap.o \
   Image.o \
