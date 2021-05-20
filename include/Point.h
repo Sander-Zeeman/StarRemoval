@@ -15,6 +15,10 @@ public:
     long index() { return m_index; }
     short id() { return m_id; }
 
+    void setLocation(float x, float y) {
+        m_x = x;
+        m_y = y;
+    }
     void setID(short id) { m_id = id; }
 
     float euclidSquaredDist(Point p) {
