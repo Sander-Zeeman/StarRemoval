@@ -10,14 +10,26 @@ TimerWrapper* TimerWrapper::TimerInstance()
    return m_wrapper;
 }
 
-void TimerWrapper::startTimer() {
+void TimerWrapper::startTimer()
+{
     timers.push(new Timer());
 }
 
-void TimerWrapper::stopTimer(const char *action) {
+void TimerWrapper::stopTimer(const char *action)
+{
     std::cout << action << " took ";
     Timer *t = timers.top();
     delete t;
     timers.pop();
     std::cout << std::endl << std::endl;
+}
+
+void TimerWrapper::cleanTimer()
+{
+    if (timers.size() == 0) {
+        delete m_wrapper;
+        m_wrapper = nullptr;
+    } else {
+        std::cout << "Can't free the timers while a timer is still running!" << std::endl;
+    }
 }

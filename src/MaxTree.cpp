@@ -1,8 +1,8 @@
 #include "../include/MaxTree.h"
 
 MaxTree::MaxTree(Image *img)
+    : m_img(img)
 {
-	m_img = img;
 	m_nodes = new Node[m_img->size()];
     for (long i = 0; i < img->size(); i++) {
         m_nodes[i].setHeight(img->data()[i]);

@@ -24,15 +24,16 @@ private:
 class TimerWrapper
 {
 public:
+    TimerWrapper() {}
+    ~TimerWrapper() {}
+
     static TimerWrapper *TimerInstance();
 
     void startTimer();
     void stopTimer(const char *action);
+    void cleanTimer();
 
 private:
-    TimerWrapper() {}
-    ~TimerWrapper() {}
-
     static TimerWrapper *m_wrapper;
 
     std::stack<Timer*> timers;

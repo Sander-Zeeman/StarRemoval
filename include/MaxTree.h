@@ -16,7 +16,6 @@ public:
 	MaxTree(Image *img);
 	~MaxTree();
 
-	Image *img() { return m_img; }
 	Node *root() { return m_root; }
 	Node *nodes() { return m_nodes; }
 	void flood();

@@ -1,3 +1,5 @@
+//#include "matplotlibcpp.h"
+
 #include "../include/Clusterer.h"
 #include "../include/Debug.h"
 #include "../include/Image.h"
@@ -19,43 +21,24 @@ int main(int argc, char *argv[])
 
     // Reading the image
     Image *img = new Image(static_cast<char*>(argv[1]));
-
+    img->estimateBG();
+/*
     // Building the MaxTree
 	MaxTree *tree = new MaxTree(img);
 	tree->flood();
 
     // Object detection.
-	Detector *detect = new Detector(tree);
+	Detector *detect = new Detector(img, tree);
 	detect->objectDetection();
-
-    TimerWrapper::TimerInstance()->startTimer();
-    // Creating points for clustering.
-    Node *nodes = tree->nodes();
-    std::vector<Point> points;
-
-    for (int y = 0; y < img->height(); y++) {
-        for (int x = 0; x < img->width(); x++) {
-            long idx = y * img->width() + x;
-            if (!nodes[idx].isSignificant())
-                continue;
-
-            Point p(static_cast<float>(nodes[idx].area()), img->data()[idx]);
-            points.push_back(p);
-        }
-    }
-    TimerWrapper::TimerInstance()->stopTimer("Creating points for clustering");
-
-    Clusterer *clusterer = new Clusterer(points);
-    clusterer->cluster();
-
+*/
     // Writing the modified image.
     img->writeImage();
 
-    delete clusterer;
-	delete detect;
-	delete tree;
+	//delete detect;
+	//delete tree;
 	delete img;
 
     TimerWrapper::TimerInstance()->stopTimer("The full program");
+	TimerWrapper::TimerInstance()->cleanTimer();
 	return 0;
 }

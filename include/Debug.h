@@ -6,7 +6,7 @@
 #include <stack>
 
 #define CFITSIO
-//#define DEBUG
+#define DEBUG
 #define TIME
 
 #ifdef TIME

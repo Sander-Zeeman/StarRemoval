@@ -10,6 +10,7 @@ FLAGS = \
   -Wconversion
 
 OBJS = \
+  BGFunctions.o \
   Clusterer.o \
   Detector.o \
   Heap.o \
@@ -19,6 +20,10 @@ OBJS = \
   Timer.o
 
 CFITSIO = -I /usr/local/include/cfitsio -lcfitsio
+MATPLOTLIBCPP = -I /usr/local/include/matplotlibCpp -I \
+/usr/include/python3.8 -I \
+~/.local/lib/python3.8/site-packages/numpy/core/include -lpython3.8
+
 LIBS = -L /usr/local/lib
 
 REBUILDABLES = $(addprefix out/, $(OBJS)) $(LINK_TARGET)
@@ -28,10 +33,10 @@ all : $(MKDIR_OUT) $(LINK_TARGET)
 $(MKDIR_OUT) : mkdir out
 
 $(LINK_TARGET) : $(addprefix out/, $(OBJS))
-	g++ -o $@ $^ $(LIBS) $(CFITSIO)
+	g++ -o $@ $^ $(LIBS) $(CFITSIO) #$(MATPLOTLIBCPP)
 
 out/%.o : src/%.cpp
-	g++ $(FLAGS) -o $@ -c $< $(LIBS) $(CFITSIO)
+	g++ $(FLAGS) -o $@ -c $< $(LIBS) $(CFITSIO) #$(MATPLOTLIBCPP)
 
 clean :
 	rm -f $(REBUILDABLES)

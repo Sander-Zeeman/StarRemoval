@@ -1,4 +1,5 @@
 #include "../include/Image.h"
+#include "../include/BGFunctions.h"
 
 Image::Image(char *filename)
 	: m_name(filename)
@@ -86,6 +87,27 @@ void Image::debugImage()
     	}
     	std::cout << std::endl;
 	#endif
+}
+
+void Image::estimateBG()
+{
+    BGFunctions bgFunctions(this);
+    bgFunctions.estimateBG();
+
+    m_mean = bgFunctions.mean();
+    m_variance = bgFunctions.variance();
+    m_gain = bgFunctions.gain();
+
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            m_data[y * m_width + x] =
+                (
+                    m_data[y * m_width + x] - m_mean < 0 ?
+                    0.0f :
+                    m_data[y * m_width + x] - m_mean
+                );
+        }
+    }
 }
 
 void Image::writeImage()

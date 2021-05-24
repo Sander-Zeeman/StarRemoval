@@ -22,7 +22,7 @@ public:
 	}
 
 private:
-	float m_val = -1.0;
+	float m_val = -1.0f;
 	int m_x = 0;
 	int m_y = 0;
 };
