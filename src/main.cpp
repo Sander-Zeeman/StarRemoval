@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     // Reading the image
     Image *img = new Image(static_cast<char*>(argv[1]));
-    img->estimateBG();
+    img->estimateBackground();
 /*
     // Building the MaxTree
 	MaxTree *tree = new MaxTree(img);

@@ -10,13 +10,17 @@
 #include <cstring>
 #include <iomanip>
 
+typedef struct {
+    float mean, var, gain;
+} imgStats;
+
 class Image
 {
 public:
 	Image(char *filename);
 	~Image();
 
-    void estimateBG();
+    void estimateBackground();
     void writeImage();
 
 	float *data() { return m_data; }
@@ -40,10 +44,7 @@ private:
 	int m_width = 0;
 	int m_height = 0;
 	long m_size = 0;
-
-    float m_mean = 0.0f;
-    float m_variance = 0.0f;
-    float m_gain = 0.0f;
+    imgStats m_stats;
 };
 
 #endif

@@ -1,5 +1,5 @@
-#include "../include/Image.h"
 #include "../include/BGFunctions.h"
+#include "../include/Image.h"
 
 Image::Image(char *filename)
 	: m_name(filename)
@@ -89,22 +89,17 @@ void Image::debugImage()
 	#endif
 }
 
-void Image::estimateBG()
+void Image::estimateBackground()
 {
-    BGFunctions bgFunctions(this);
-    bgFunctions.estimateBG();
-
-    m_mean = bgFunctions.mean();
-    m_variance = bgFunctions.variance();
-    m_gain = bgFunctions.gain();
+    estimateBG(this, m_stats);
 
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
             m_data[y * m_width + x] =
                 (
-                    m_data[y * m_width + x] - m_mean < 0 ?
+                    m_data[y * m_width + x] - m_stats.mean < 0 ?
                     0.0f :
-                    m_data[y * m_width + x] - m_mean
+                    m_data[y * m_width + x] - m_stats.mean
                 );
         }
     }

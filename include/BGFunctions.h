@@ -5,38 +5,29 @@
 #include "Image.h"
 #include "Pixel.h"
 
+#include <boost/math/distributions/chi_squared.hpp>
+#include <boost/math/distributions/students_t.hpp>
+#include <boost/math/statistics/univariate_statistics.hpp>
 #include <cmath>
 #include <vector>
 
-class BGFunctions
-{
-public:
-    BGFunctions(Image *img) : m_img(img) {}
-    ~BGFunctions() {}
+double skewTest(std::vector<float> data);
+double kurtosisTest(std::vector<float> data);
+double KSquared(std::vector<float> data);
+double TTest(std::vector<float> data1, std::vector<float> data2);
 
-    float mean() { return m_mean; }
-    float variance() { return m_variance; }
+bool testNormality(Image *img, int xStart, int yStart, int size, double rejectRate);
+bool checkMeanEquality(std::vector<float> first, std::vector<float> second, double rejectRate);
+bool checkMeans(Image *img, int xStart, int yStart, int size, double rejectRate);
 
-    void estimateBG();
+bool isFlatTile(Image *img, int xStart, int yStart, int size, double rejectRate);
+bool tilesAvailable(Image *img, int size, double rejectRate);
+int largestTileSize(Image *img, double rejectRate);
 
-private:
-    bool testNormality(int xStart, int yStart, int size, float rejectRate);
-    bool checkMeanEquality(std::vector<float> first, std::vector<float> second, float rejectRate);
-    bool checkMeans(int xStart, int yStart, int size, float rejectRate);
-    bool isFlatTile(int xStart, int yStart, int size, float rejectRate);
-    bool tilesAvailable(int size, float rejectRate);
-    int largestTileSize(float rejectRate);
-    void calculateMean(std::vector<Pixel> tiles, int size);
-    void calculateVariance(std::vector<Pixel> tiles, int size);
-    void estimateStats(std::vector<Pixel> tiles, int size);
-    void setStats(int size, float rejectRate);
+std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int size);
+void estimateStats(Image *img, std::vector<Pixel> tiles, imgStats & stats, int size);
+void setStats(Image *img, int size, imgStats & stats, double rejectRate);
 
-
-    Image *m_img = nullptr;
-
-    float m_mean = 0.0f;
-    float m_variance = 0.0f;
-    float m_gain = 0.0f;
-};
+void estimateBG(Image *img, imgStats & stats);
 
 #endif
