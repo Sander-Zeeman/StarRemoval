@@ -21,16 +21,21 @@ public:
 	~Image();
 
     void estimateBackground();
+    void subImage(int lowX, int highX, int lowY, int highY);
     void writeImage();
 
 	float *data() { return m_data; }
 	int width() { return m_width; }
 	int height() { return m_height; }
 	long size() { return m_size; }
+    imgStats stats() { return m_stats; }
 
 private:
     void debugImage();
 	void readImage();
+
+    void findPixelBounds(float & min, float & max);
+    void stretchContrast();
 
 	#ifdef CFITSIO
 	    void printError(int status);

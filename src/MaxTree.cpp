@@ -98,16 +98,17 @@ void MaxTree::queueNeighbours(Pixel pixel)
 
 void MaxTree::mergeNodes(long toIndex, long fromIndex)
 {
-    // My volume definition is the area * the value, as all pixels in a node have the same value.
-    // Still unsure what power means
-
 	Node *toNode = m_nodes + toIndex;
 	Node *fromNode = m_nodes + fromIndex;
 
 	toNode->setArea(toNode->area() + fromNode->area());
 
 	float delta = m_img->data()[fromIndex] - m_img->data()[toIndex];
-	float powerChange = delta * (2 * fromNode->volume() + delta * static_cast<float>(fromNode->area()));
+
+    float volumeChange = delta * static_cast<float>(fromNode->area());
+    toNode->setVolume(toNode->volume() + fromNode->volume() + volumeChange);
+
+	float powerChange = delta * (2 * fromNode->volume() + volumeChange);
 	toNode->setPower(toNode->power() + fromNode->power() + powerChange);
 }
 

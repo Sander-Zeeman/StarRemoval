@@ -15,9 +15,10 @@ public:
 	~Detector();
 
     std::vector<long> relevantIndices() { return m_relevantIndices; }
+    long *ids() { return m_objectIDs; }
     long *mainBranch() { return m_mainBranches; }
 
-	void objectDetection();
+	void starDetection();
 
 private:
 	void findRelevantNodes();
@@ -27,16 +28,21 @@ private:
     bool sigTest(long idx);
 	void findSignificantNodes();
 	void findObjects();
+    float findTop(Node *nodes, long idx);
+    void findStars();
 	void markIDs();
 
 	MaxTree *m_tree = nullptr;
     Image *m_img = nullptr;
+
 	std::vector<long> m_relevantIndices;
 	long *m_closestSigAncestors = nullptr;
 	long *m_mainBranches = nullptr;
 	long *m_objectIDs = nullptr;
+
 	long m_significantNodeCount = 0;
 	long m_objectCount = 0;
+    long m_starCount = 0;
 };
 
 #endif

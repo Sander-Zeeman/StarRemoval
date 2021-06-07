@@ -60,7 +60,6 @@ void Detector::findRelevantNodes()
 
 void Detector::updateMainBranch(long idx)
 {
-    // Not sure what's going on here yet.
     if (m_closestSigAncestors[idx] == NO_PARENT)
         return;
 
@@ -81,11 +80,14 @@ void Detector::updateMainBranch(long idx)
 
 float Detector::noiseVariance(long idx)
 {
-    float gain = 0.9f;
-    float variance = 0.1f;
+    imgStats statistics = m_img->stats();
+    float variance = statistics.var;
+    float gain = statistics.gain;
+
     if (m_closestSigAncestors[idx] != NO_PARENT) {
         variance += (m_img->data()[m_closestSigAncestors[idx]] / gain);
     }
+
     return variance;
 }
 
@@ -179,7 +181,7 @@ void Detector::findSignificantNodes()
     }
 
     #ifdef DEBUG
-        std::cout << m_significantNodeCount << " significant nodes at." << std::endl;
+        std::cout << m_significantNodeCount << " significant nodes found." << std::endl;
     #endif
 
     TimerWrapper::TimerInstance()->stopTimer("Finding significant nodes");
@@ -223,25 +225,112 @@ void Detector::findObjects()
     TimerWrapper::TimerInstance()->stopTimer("Finding objects");
 }
 
+float Detector::findTop(Node *nodes, long idx)
+{
+    if (nodes[idx].top() != UNASSIGNED)
+        return nodes[idx].top();
+
+    float top = nodes[idx].hasSigDescendent() ? findTop(nodes, m_mainBranches[idx]) : nodes[idx].height();
+
+    nodes[idx].setTop(top);
+    return top;
+}
+
+void Detector::findStars()
+{
+    TimerWrapper::TimerInstance()->startTimer();
+
+    Node *nodes = m_tree->nodes();
+
+    for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
+        long idx = m_relevantIndices[i];
+
+        if (!nodes[idx].isObject())
+            continue;
+
+        float toss = findTop(m_tree->nodes(), idx);
+    }
+
+    for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
+        long idx = m_relevantIndices[i];
+
+        if (!nodes[idx].isObject()) {
+            continue;
+        }
+
+        // > 1e6 area probably background
+        if (nodes[idx].area() < 10000 && nodes[idx].top() > 0.3) {
+            nodes[idx].setStar(true);
+            m_starCount++;
+            continue;
+        }
+    }
+
+    #ifdef DEBUG
+        std::cout << m_starCount << " stars detected." << std::endl;
+    #endif
+
+    TimerWrapper::TimerInstance()->stopTimer("Finding stars");
+}
+
 void Detector::markIDs()
 {
     TimerWrapper::TimerInstance()->startTimer();
 
-    // Not sure if needed yet, as we only really care about stars.
+    Node *nodes = m_tree->nodes();
+
+    for (long i = 0; i < m_img->size(); i++) {
+        if (nodes[i].starChecked())
+            continue;
+
+        long next_idx = i;
+
+        while (
+            next_idx != NO_PARENT &&
+            !nodes[next_idx].isStar() &&
+            !nodes[next_idx].starChecked()
+        )
+        {
+            nodes[next_idx].setCheckedForStar(true);
+            next_idx = nodes[next_idx].parent();
+        }
+
+        long object_id = NO_OBJECT;
+        long end_idx = next_idx;
+
+        if (next_idx == NO_PARENT) {
+            object_id = NO_OBJECT;
+            end_idx = next_idx;
+        } else if (nodes[next_idx].starChecked()) {
+            object_id = m_objectIDs[next_idx];
+            end_idx = next_idx;
+        } else if (nodes[next_idx].isStar()) {
+            object_id = next_idx;
+            end_idx = nodes[next_idx].parent();
+            nodes[object_id].setCheckedForStar(true);
+        }
+
+        next_idx = i;
+        do {
+            m_objectIDs[next_idx] = object_id;
+            next_idx = nodes[next_idx].parent();
+        } while (next_idx != end_idx);
+    }
 
     TimerWrapper::TimerInstance()->stopTimer("Marking IDs");
 }
 
-void Detector::objectDetection()
+void Detector::starDetection()
 {
     TimerWrapper::TimerInstance()->startTimer();
 
 	findRelevantNodes();
 	findSignificantNodes();
 	findObjects();
+    findStars();
 	markIDs();
 
-    TimerWrapper::TimerInstance()->stopTimer("Full object detection");
+    TimerWrapper::TimerInstance()->stopTimer("Star detection");
 
     return;
 }
