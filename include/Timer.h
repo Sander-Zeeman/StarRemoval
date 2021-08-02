@@ -2,8 +2,8 @@
 #define TIMER_H
 
 #include <ctime>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <stack>
 
 class Timer

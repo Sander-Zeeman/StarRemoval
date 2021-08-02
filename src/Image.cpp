@@ -1,14 +1,21 @@
 #include "../include/BGFunctions.h"
 #include "../include/Image.h"
 
-Image::Image(char *filename)
-	: m_name(filename)
+// Reading image data from a file.
+Image::Image(const char *filename)
 {
-	readImage();
-    #ifdef DEBUG
-        std::cout << "Width: " << m_width << ", Height: " << m_height << ", Size: " << m_size << std::endl << std::endl;
-    #endif
+	read(filename);
+}
 
+// Creating an Image object from data.
+Image::Image(std::vector<float> data, int width, int height)
+    : m_width(width)
+    , m_height(height)
+    , m_size(width * height)
+{
+    m_data = new float[m_size];
+	for (long i = 0; i < m_size; i++)
+        m_data[i] = data[i];
 }
 
 Image::~Image()
@@ -16,202 +23,137 @@ Image::~Image()
 	delete [] m_data;
 }
 
-void Image::subImage(int lowX, int highX, int lowY, int highY)
+float Image::enforceBounds(float value)
 {
-    long size = (highX - lowX) * (highY - lowY);
-    float *newData = new float[size];
-    for (int y = 0; y < highY - lowY; y++) {
-        for (int x = 0; x < highX - lowX; x++) {
-            newData[y * (highX - lowX) + x] = m_data[(y + lowY) * m_width + x + lowX];
-        }
-    }
-
-    delete [] m_data;
-    m_data = newData;
-    m_width = highX - lowX;
-    m_height = highY - lowY;
-    m_size = size;
-}
-
-void Image::debugImage()
-{
-/*
-    The following debug image is used:
-        0.0 0.0 0.0 0.2 0.2 0.2
-        0.0 0.0 0.2 0.2 0.4 0.2
-        0.0 0.2 0.2 0.4 0.6 0.4
-        0.0 0.0 0.2 0.2 0.4 0.2
-        0.0 0.0 0.0 0.2 0.2 0.2
-        0.0 0.0 0.0 0.0 0.2 0.0
-*/
-
-	m_width = 6;
-	m_height = 6;
-	m_size = 36;
-
-	m_data = new float[36];
-
-	m_data[0] = 0.0f;
-	m_data[1] = 0.0f;
-	m_data[2] = 0.0f;
-	m_data[3] = 0.2f;
-	m_data[4] = 0.2f;
-    m_data[5] = 0.2f;
-
-	m_data[6] = 0.0f;
-	m_data[7] = 0.0f;
-	m_data[8] = 0.2f;
-	m_data[9] = 0.2f;
-	m_data[10] = 0.4f;
-	m_data[11] = 0.2f;
-
-	m_data[12] = 0.0f;
-	m_data[13] = 0.2f;
-	m_data[14] = 0.2f;
-	m_data[15] = 0.4f;
-	m_data[16] = 0.6f;
-	m_data[17] = 0.4f;
-
-	m_data[18] = 0.0f;
-	m_data[19] = 0.0f;
-	m_data[20] = 0.2f;
-	m_data[21] = 0.2f;
-	m_data[22] = 0.4f;
-	m_data[23] = 0.2f;
-
-	m_data[24] = 0.0f;
-	m_data[25] = 0.0f;
-	m_data[26] = 0.0f;
-	m_data[27] = 0.2f;
-	m_data[28] = 0.2f;
-	m_data[29] = 0.2f;
-
-	m_data[30] = 0.0f;
-	m_data[31] = 0.0f;
-	m_data[32] = 0.0f;
-	m_data[33] = 0.0f;
-	m_data[34] = 0.2f;
-	m_data[35] = 0.0f;
-
-	#ifdef DEBUG
-    	std::cout << "Image used: " << std::endl;
-    	std::cout << std::setprecision(1) << std::fixed;
-    	for (int y = 0; y < 6; y++) {
-    		for (int x = 0; x < 6; x++) {
-    			std::cout << m_data[6 * y + x] << " ";
-    		}
-    		std::cout << std::endl;
-    	}
-    	std::cout << std::endl;
-	#endif
+    if (value > 1.0f)
+        return 1.0f;
+    if (value < 0.0f)
+        return 0.0f;
+    return value;
 }
 
 void Image::estimateBackground()
 {
+    // Retrieving the mean, variance and gain of this image.
     estimateBG(this, m_stats);
 
+    // Subtracting the mean to reduce background noise, followed by normalization.
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
-            // Make sure the range of the image remains [0, 1]
             float newVal = (m_data[y * m_width + x] - m_stats.mean) / (1 - m_stats.mean);
-
-            if (newVal < 0.0f) {
-                newVal = 0.0f;
-            } else if (newVal > 1.0f) {
-                newVal = 1.0f;
-            }
-
-            m_data[y * m_width + x] = newVal;
+            m_data[y * m_width + x] = enforceBounds(newVal);
         }
     }
 }
 
-void Image::findPixelBounds(float & min, float & max)
+void Image::stretch(float min, float max)
 {
-    min = 1.1f;
-    max = -0.1f;
-    for (long i = 0; i < m_size; i += 2) {
-        if (m_data[i] < min) {
-            min = m_data[i];
-        } else if (m_data[i] > max) {
-            max = m_data[i];
-        }
-    }
-
-    if (m_size % 2 == 1) {
-        if (m_data[m_size - 1] < min) {
-            min = m_data[m_size - 1];
-        } else if (m_data[m_size - 1] > max) {
-            max = m_data[m_size - 1];
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            float newVal = (m_data[y * m_width + x] - min) / (max - min);
+            m_data[y * m_width + x] = enforceBounds(newVal);
         }
     }
 }
 
-void Image::stretchContrast()
+void Image::write(const char *filename)
 {
-    float min, max;
-    findPixelBounds(min, max);
-
-    #ifdef DEBUG
-        std::cout << "Min: " << min << ", Max: " << max << std::endl;
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->startTimer();
     #endif
 
-    for (long i = 0; i < m_size; i++) {
-        m_data[i] = (m_data[i] - min) / max;
+    // Find the extension of the given filename, so we know how to write it.
+    const char *extension = strrchr(filename, '.');
 
-        if (m_data[i] < 0) {
-            m_data[i] = 0.0f;
-        } else if (m_data[i] > 1) {
-            m_data[i] = 1.0f;
-        }
-    }
-}
-
-void Image::writeImage()
-{
-    TimerWrapper::TimerInstance()->startTimer();
-
-//    stretchContrast();
-
-	if (strcmp(m_extension, ".fits") == 0) {
-		#ifdef CFITSIO
-		    writeFitsImage();
-		#endif
-	} else {
-        exit(1);
-	}
-    TimerWrapper::TimerInstance()->stopTimer("Writing the image");
-}
-
-void Image::readImage()
-{
-    TimerWrapper::TimerInstance()->startTimer();
-
-	// Find the extension of the given filename, so we know how to read it.
-	m_extension = strrchr(m_name, '.');
-
-	// No extension was found.
-	if (!m_extension) {
+	if (!extension) {
 		std::cout << "ERROR: No file extension found" << std::endl;
 		exit(1);
 	}
 
-	if (strcmp(m_extension, ".fits") == 0) {
+	if (strcmp(extension, ".fits") == 0) {
+		#ifdef CFITSIO
+		    writeFitsImage(filename);
+		#endif
+	} else {
+        std::cout << "The filetype: " << extension << " is not currently supported." << std::endl;
+        exit(1);
+	}
+
+    #ifdef DEBUG
+        std::cout << "Wrote image to: " << filename << std::endl;
+        std::cout << "Image stats:" << std::endl;
+        std::cout << "  Width: " << m_width << std::endl;
+        std::cout << "  Height: " << m_height << std::endl;
+        std::cout << "  Size: " << m_size << std::endl;
+    #endif
+
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->stopTimer("Writing the image");
+    #endif
+}
+
+Image *Image::subsection(int zoomX, int zoomY, int zoomWidth, int zoomHeight)
+{
+    std::vector<float> zoomData;
+
+    for (int y = 0; y < zoomHeight; y++)
+        for (int x = 0; x < zoomWidth; x++)
+            zoomData.push_back(m_data[(y + zoomY) * m_width + (x + zoomX)]);
+
+    return new Image(zoomData, zoomWidth, zoomHeight);
+}
+
+// Writing a subsection of an image.
+void Image::writeSection(const char *filename)
+{
+    Image *zoomedImg = subsection();
+    zoomedImg->write(filename);
+    delete zoomedImg;
+}
+
+// Reading an image from a file.
+void Image::read(const char *filename)
+{
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->startTimer();
+    #endif
+
+	// Find the extension of the given filename, so we know how to read it.
+	const char *extension = strrchr(filename, '.');
+
+	if (!extension) {
+		std::cout << "ERROR: No file extension found" << std::endl;
+		exit(1);
+	}
+
+	if (strcmp(extension, ".fits") == 0) {
 		// File is a FITS file.
 		#ifdef CFITSIO
-		    readFitsImage();
+		    readFitsImage(filename);
 		#else
-            std::cout << "CFITSIO not linked, yet a fits file was entered." << std::endl;
+            std::cout << "CFITSIO is not enabled, yet a fits file was entered." << std::endl;
             exit(1);
 		#endif
 	} else {
-        // File has another format.
+        std::cout << "The filetype: " << extension << " is not currently supported." << std::endl;
         exit(1);
     }
-    TimerWrapper::TimerInstance()->stopTimer("Reading the image");
+
+    #ifdef DEBUG
+        std::cout << "Read image from: " << filename << std::endl;
+        std::cout << "Image stats:" << std::endl;
+        std::cout << "  Width: " << m_width << std::endl;
+        std::cout << "  Height: " << m_height << std::endl;
+        std::cout << "  Size: " << m_size << std::endl;
+    #endif
+
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->stopTimer("Reading the image");
+    #endif
 }
 
 #ifdef CFITSIO
+
 void Image::printError(int status)
 {
 	if (status) {
@@ -221,17 +163,10 @@ void Image::printError(int status)
 	return;
 }
 
-void Image::writeFitsImage()
+void Image::writeFitsImage(const char *filename)
 {
     fitsfile *fptr;
     int status = 0;
-
-    char *name = m_name;
-    while (*name != '.')
-        name++;
-    *name = '\0';
-    char *filename = strcat(m_name, "_modified.fits");
-
     int bitpix = FLOAT_IMG;
     long naxes[2] = {m_width, m_height};
 
@@ -250,7 +185,7 @@ void Image::writeFitsImage()
         printError(status);
 }
 
-void Image::readFitsImage()
+void Image::readFitsImage(const char *filename)
 {
 	fitsfile *fptr;
 	int status = 0;
@@ -258,7 +193,7 @@ void Image::readFitsImage()
 	long naxes[2];
 	float nullval = 0;
 
-	if ( fits_open_file(&fptr, m_name, READONLY, &status) )
+	if ( fits_open_file(&fptr, filename, READONLY, &status) )
 		printError( status );
 
 	if ( fits_read_keys_lng(fptr, "NAXIS", 1, 2, naxes, &nfound, &status) )
@@ -275,7 +210,6 @@ void Image::readFitsImage()
 
 	if ( fits_close_file(fptr, &status) )
 		printError( status );
-
-	return;
 }
+
 #endif

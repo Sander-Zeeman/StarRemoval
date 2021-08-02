@@ -11,22 +11,24 @@
 #include <cmath>
 #include <vector>
 
+const double baseRejectRate = 0.05f;
+
 double skewTest(std::vector<float> data);
 double kurtosisTest(std::vector<float> data);
 double KSquared(std::vector<float> data);
-double TTest(std::vector<float> data1, std::vector<float> data2);
+bool testNormality(Image *img, int xStart, int yStart, int tileSize, double rejectRate);
 
-bool testNormality(Image *img, int xStart, int yStart, int size, double rejectRate);
-bool checkMeanEquality(std::vector<float> first, std::vector<float> second, double rejectRate);
-bool checkMeans(Image *img, int xStart, int yStart, int size, double rejectRate);
+double TTest(std::vector<float> firstHalf, std::vector<float> secondHalf);
+bool checkMeanEquality(std::vector<float> firstHalf, std::vector<float> secondHalf, double rejectRate);
+bool checkMeans(Image *img, int xStart, int yStart, int tileSize, double rejectRate);
 
-bool isFlatTile(Image *img, int xStart, int yStart, int size, double rejectRate);
-bool tilesAvailable(Image *img, int size, double rejectRate);
-int largestTileSize(Image *img, double rejectRate);
+bool isFlatTile(Image *img, int xStart, int yStart, int tileSize);
+bool tilesAvailable(Image *img, int tileSize);
+int largestTileSize(Image *img);
 
-std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int size);
-void estimateStats(Image *img, std::vector<Pixel> tiles, imgStats & stats, int size);
-void setStats(Image *img, int size, imgStats & stats, double rejectRate);
+std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int tileSize);
+void estimateStats(Image *img, std::vector<Pixel> tiles, int tileSize, imgStats & stats);
+void setStats(Image *img, int size, imgStats & stats);
 
 void estimateBG(Image *img, imgStats & stats);
 

@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <vector>
 
 typedef struct {
     float mean, var, gain;
@@ -17,12 +18,17 @@ typedef struct {
 class Image
 {
 public:
-	Image(char *filename);
+	Image(const char *filename);
+    Image(std::vector<float> data, int width, int height);
 	~Image();
 
     void estimateBackground();
-    void subImage(int lowX, int highX, int lowY, int highY);
-    void writeImage();
+
+    Image *subsection(int zoomX = 2874, int zoomY = 1867, int zoomWidth = 800, int zoomHeight = 800);
+    void stretch(float min, float max);
+
+    void write(const char *filename);
+    void writeSection(const char *filename);
 
 	float *data() { return m_data; }
 	int width() { return m_width; }
@@ -31,20 +37,15 @@ public:
     imgStats stats() { return m_stats; }
 
 private:
-    void debugImage();
-	void readImage();
-
-    void findPixelBounds(float & min, float & max);
-    void stretchContrast();
+    float enforceBounds(float value);
+	void read(const char *filename);
 
 	#ifdef CFITSIO
 	    void printError(int status);
-	    void readFitsImage();
-        void writeFitsImage();
+	    void readFitsImage(const char *filename);
+        void writeFitsImage(const char *filename);
     #endif
 
-	char *m_name = nullptr;
-	char* m_extension = nullptr;
 	float *m_data = nullptr;
 	int m_width = 0;
 	int m_height = 0;

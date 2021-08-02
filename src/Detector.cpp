@@ -25,7 +25,9 @@ Detector::~Detector()
 
 void Detector::findRelevantNodes()
 {
-    TimerWrapper::TimerInstance()->startTimer();
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->startTimer();
+    #endif
 
 	Heap *heap = new Heap(m_img->size());
     float *data = m_img->data();
@@ -44,7 +46,7 @@ void Detector::findRelevantNodes()
 		}
 	}
 
-	while (!heap->isEmpty())
+    while (!heap->isEmpty())
 		m_relevantIndices.push_back(heap->remove().index(m_img->width()));
 
     std::reverse(m_relevantIndices.begin(), m_relevantIndices.end());
@@ -55,7 +57,9 @@ void Detector::findRelevantNodes()
 
 	delete heap;
 
-    TimerWrapper::TimerInstance()->stopTimer("Finding relevant indices");
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->stopTimer("Finding relevant indices");
+    #endif
 }
 
 void Detector::updateMainBranch(long idx)
@@ -251,6 +255,7 @@ void Detector::findStars()
         float toss = findTop(m_tree->nodes(), idx);
     }
 
+
     for (unsigned long i = 0; i < m_relevantIndices.size(); i++) {
         long idx = m_relevantIndices[i];
 
@@ -258,8 +263,12 @@ void Detector::findStars()
             continue;
         }
 
-        // > 1e6 area probably background
-        if (nodes[idx].area() < 10000 && nodes[idx].top() > 0.3) {
+        if (
+            (
+                (nodes[idx].top() - nodes[idx].height()) / nodes[idx].area() > MIN_RATIO
+                || nodes[idx].top() > MIN_BRIGHTNESS
+            ) && nodes[idx].area() < MAX_AREA
+        ) {
             nodes[idx].setStar(true);
             m_starCount++;
             continue;

@@ -6,22 +6,21 @@ FLAGS = \
   -O2 \
   -pedantic \
   -Wall \
-  -Wextra \
-  -Wconversion
+  -Wextra
 
 OBJS = \
   BGFunctions.o \
-  Clusterer.o \
   Detector.o \
   Heap.o \
   Image.o \
-  main.o \
+  realMain.o \
   MaxTree.o \
   PostProcessing.o \
   Timer.o
 
 CFITSIO = -I /usr/local/include/cfitsio -lcfitsio
 BOOST = -I /usr/local/include/boost
+OPENCV = -I /usr/local/include/opencv4 -lopencv_core -lopencv_photo -lopencv_imgproc
 
 LIBS = -L /usr/local/lib
 
@@ -30,10 +29,10 @@ REBUILDABLES = $(addprefix out/, $(OBJS)) $(LINK_TARGET)
 all : $(LINK_TARGET)
 
 $(LINK_TARGET) : $(addprefix out/, $(OBJS))
-	g++ -o $@ $^ $(LIBS) $(CFITSIO) $(BOOST)
+	g++ -o $@ $^ $(LIBS) $(CFITSIO) $(BOOST) $(OPENCV)
 
 out/%.o : src/%.cpp
-	g++ $(FLAGS) -o $@ -c $< $(LIBS) $(CFITSIO) $(BOOST)
+	g++ $(FLAGS) -o $@ -c $< $(LIBS) $(CFITSIO) $(BOOST) $(OPENCV)
 
 clean :
 	rm -f $(REBUILDABLES)

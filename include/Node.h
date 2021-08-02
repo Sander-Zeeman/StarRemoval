@@ -23,23 +23,23 @@ public:
 	bool starChecked() { return m_flags & 4; }
 	void setCheckedForStar(bool b) { setFlag(b, 4); }
 
-	bool sigAncestorChecked() { return m_flags & 8; }
-	void setCheckedForSigAncestor(bool b) { setFlag(b, 8); }
+    bool isStar() { return m_flags & 8; }
+	void setStar(bool b) { setFlag(b, 8); }
 
-	bool hasSigDescendent() { return m_flags & 16; }
-	void setHasSigDescendent(bool b) { setFlag(b, 16); }
+	bool sigAncestorChecked() { return m_flags & 16; }
+	void setCheckedForSigAncestor(bool b) { setFlag(b, 16); }
 
-	bool hasDescendent() { return m_flags & 32; }
-	void setHasDescendent(bool b) { setFlag(b, 32); }
+	bool hasSigDescendent() { return m_flags & 32; }
+	void setHasSigDescendent(bool b) { setFlag(b, 32); }
 
-	bool isStar() { return m_flags & 64; }
-	void setStar(bool b) { setFlag(b, 64); }
+	bool hasDescendent() { return m_flags & 64; }
+	void setHasDescendent(bool b) { setFlag(b, 64); }
 
 	long parent() { return m_parent; }
 	float height() { return m_height; }
 	float top() { return m_top; }
 	long area() { return m_area; }
-	float volume() { return static_cast<float>(m_area) * m_height; }
+	float volume() { return m_volume; }
 	float power() { return m_power; }
 
 	void setParent(long index) { m_parent = index; }

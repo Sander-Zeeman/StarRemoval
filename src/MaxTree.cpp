@@ -134,6 +134,7 @@ void MaxTree::descend(Pixel pixel)
 
 void MaxTree::finishStack()
 {
+    std::cout << m_stack.size() << std::endl;
 	// When we finish, the stack can still contain some pixels, we string them together.
 	while (m_stack.size() > 1) {
 		Pixel oldTop = m_stack.top();

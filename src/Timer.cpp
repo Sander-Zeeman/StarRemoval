@@ -18,10 +18,9 @@ void TimerWrapper::startTimer()
 void TimerWrapper::stopTimer(const char *action)
 {
     std::cout << action << " took ";
-    Timer *t = timers.top();
-    delete t;
+    delete timers.top();
     timers.pop();
-    std::cout << std::endl << std::endl;
+    std::cout << std::endl;
 }
 
 void TimerWrapper::cleanTimer()

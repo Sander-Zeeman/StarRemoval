@@ -20,11 +20,11 @@ void Heap::swapEntries(long a, long b) {
 void Heap::insert(Pixel pixel) {
 	m_entries[++m_currSize] = pixel;
 	long index = m_currSize;
-    long parent = index / 2;
+    long parent = index >> 1;
 	while (index != 1 && m_entries[index].val() > m_entries[parent].val()) {
 		swapEntries(index, parent);
 		index = parent;
-        parent = index / 2;
+        parent = index >> 1;
 	}
 }
 
@@ -32,7 +32,7 @@ void Heap::maxHeapify(long pos) {
 	if (pos > (m_currSize / 2) && pos <= m_currSize)
 		return;
 
-    long lChild = 2 * pos;
+    long lChild = pos << 1;
     long rChild = lChild + 1;
     if (
         m_entries[pos].val() < m_entries[lChild].val() ||

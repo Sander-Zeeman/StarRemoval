@@ -17,6 +17,7 @@ public:
     std::vector<long> relevantIndices() { return m_relevantIndices; }
     long *ids() { return m_objectIDs; }
     long *mainBranch() { return m_mainBranches; }
+    long *closestSigAncestors() { return m_closestSigAncestors; }
 
 	void starDetection();
 

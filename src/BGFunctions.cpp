@@ -70,69 +70,67 @@ double KSquared(std::vector<float> data)
 {
     // Follows the scipy implementation of this test
     // https://github.com/scipy/scipy/blob/v1.6.3/scipy/stats/stats.py#L1635-L1706
-    double s, k, k_2, p;
-
-    s = skewTest(data);
-    k = kurtosisTest(data);
-    k_2 = s*s + k*k;
+    double s = skewTest(data);
+    double k = kurtosisTest(data);
+    double k_2 = s*s + k*k;
 
     boost::math::chi_squared dist(2);
-    p = boost::math::cdf(boost::math::complement(dist, k_2));
+    double pValue = boost::math::cdf(boost::math::complement(dist, k_2));
 
-    return p;
+    return pValue;
 }
 
-double TTest(std::vector<float> data1, std::vector<float> data2)
-{
-    // Using example by the boost documentation.
-    // https://www.boost.org/doc/libs/1_46_1/libs/math/doc/sf_and_dist/html/math_toolkit/dist/stat_tut/weg/st_eg/two_sample_students_t.html
-    // Slightly off from the scipy implementation, but acceptable.
-    double p,t;
-
-    double size1 = static_cast<double>(data1.size());
-    double size2 = static_cast<double>(data2.size());
-    double dof = size1 + size2 - 2.0;
-
-    double mean1 = boost::math::statistics::mean(data1);
-    double mean2 = boost::math::statistics::mean(data2);
-
-    double var1 = boost::math::statistics::variance(data1);
-    double var2 = boost::math::statistics::variance(data2);
-
-    t = (mean1 - mean2) / sqrt((var1 / size1) + (var2 / size2));
-
-    boost::math::students_t dist(dof);
-    p = boost::math::cdf(boost::math::complement(dist, fabs(t)));
-
-    // two sided test
-    return p * 2;
-}
-
-
-bool testNormality(Image *img, int xStart, int yStart, int size, double rejectRate)
+bool testNormality(Image *img, int xStart, int yStart, int tileSize, double rejectRate)
 {
     float *data = img->data();
 
     std::vector<float> tile;
-    for (int yOffset = 0; yOffset < size; yOffset++) {
-        for (int xOffset = 0; xOffset < size; xOffset++) {
+    for (int yOffset = 0; yOffset < tileSize; yOffset++) {
+        for (int xOffset = 0; xOffset < tileSize; xOffset++) {
             int x = xStart + xOffset;
             int y = yStart + yOffset;
             tile.push_back(data[y * img->width() + x]);
         }
     }
 
-    double p = KSquared(tile);
-    return p > rejectRate;
+    double pValue = KSquared(tile);
+    return pValue > rejectRate;
 }
 
-bool checkMeanEquality(std::vector<float> first, std::vector<float> second, double rejectRate)
+double TTest(std::vector<float> firstHalf, std::vector<float> secondHalf)
 {
-    double p = TTest(first, second);
-    return p > rejectRate;
+    // Using example by the boost documentation.
+    // https://www.boost.org/doc/libs/1_46_1/libs/math/doc/sf_and_dist/html/math_toolkit/dist/stat_tut/weg/st_eg/two_sample_students_t.html
+    // Slightly off from the scipy implementation, but acceptable.
+    double pValue, t;
+
+    int size1 = firstHalf.size();
+    int size2 = secondHalf.size();
+    int dof = size1 + size2 - 2;
+
+    double mean1 = boost::math::statistics::mean(firstHalf);
+    double mean2 = boost::math::statistics::mean(secondHalf);
+
+    double var1 = boost::math::statistics::variance(firstHalf);
+    double var2 = boost::math::statistics::variance(secondHalf);
+
+    t = (mean1 - mean2) / sqrt((var1 / size1) + (var2 / size2));
+
+    boost::math::students_t dist(dof);
+    pValue = boost::math::cdf(boost::math::complement(dist, fabs(t)));
+
+    // two sided test
+    return pValue * 2;
 }
 
-bool checkMeans(Image *img, int xStart, int yStart, int size, double rejectRate)
+bool checkMeanEquality(std::vector<float> firstHalf, std::vector<float> secondHalf, double rejectRate)
+{
+    // Check for a statistically significant difference between the means of two halves.
+    double pValue = TTest(firstHalf, secondHalf);
+    return pValue > rejectRate;
+}
+
+bool checkMeans(Image *img, int xStart, int yStart, int tileSize, double rejectRate)
 {
     float *data = img->data();
 
@@ -141,21 +139,22 @@ bool checkMeans(Image *img, int xStart, int yStart, int size, double rejectRate)
     std::vector<float> topHalf;
     std::vector<float> bottomHalf;
 
-    int half = size >> 1;
+    int halfSize = tileSize >> 1;
 
-    for (int yOffset = 0; yOffset < size; yOffset++) {
-        for (int xOffset = 0; xOffset < size; xOffset++) {
+    // Split the tile in two halves in two ways, vertically and horizontally.
+    for (int yOffset = 0; yOffset < tileSize; yOffset++) {
+        for (int xOffset = 0; xOffset < tileSize; xOffset++) {
             int x = xStart + xOffset;
             int y = yStart + yOffset;
             float val = data[y * img->width() + x];
 
-            if (xOffset < half) {
+            if (xOffset < halfSize) {
                 leftHalf.push_back(val);
             } else {
                 rightHalf.push_back(val);
             }
 
-            if (yOffset < half) {
+            if (yOffset < halfSize) {
                 topHalf.push_back(val);
             } else {
                 bottomHalf.push_back(val);
@@ -163,91 +162,84 @@ bool checkMeans(Image *img, int xStart, int yStart, int size, double rejectRate)
         }
     }
 
-    if (!checkMeanEquality(topHalf, bottomHalf, rejectRate)) {
+    if (!checkMeanEquality(topHalf, bottomHalf, rejectRate))
         return false;
-    }
 
-    if (!checkMeanEquality(leftHalf, rightHalf, rejectRate)) {
+    if (!checkMeanEquality(leftHalf, rightHalf, rejectRate))
         return false;
-    }
 
     return true;
 }
 
-
-bool isFlatTile(Image *img, int xStart, int yStart, int size, double rejectRate)
+// Determines whether a tile can be considered flat, based on 4 criteria.
+bool isFlatTile(Image *img, int xStart, int yStart, int tileSize)
 {
-    if (xStart + size > img->width() || yStart + size > img->height()) {
+    if (xStart + tileSize > img->width() || yStart + tileSize > img->height())
         return false;
-    }
 
     float *data = img->data();
     float total = 0.0f;
-    for (int yOffset = 0; yOffset < size; yOffset++) {
-        for (int xOffset = 0; xOffset < size; xOffset++) {
+    for (int yOffset = 0; yOffset < tileSize; yOffset++) {
+        for (int xOffset = 0; xOffset < tileSize; xOffset++) {
             int x = xStart + xOffset;
             int y = yStart + yOffset;
             total += data[y * img->width() + x];
         }
     }
 
-    if (total < 1e-6) {
+    if (total < 1e-6)
         return false;
-    }
 
-    rejectRate = 1 - sqrt(1 - rejectRate);
-    if (!testNormality(img, xStart, yStart, size, rejectRate)) {
+    const double normalityRejectRate = 1 - sqrt(1 - baseRejectRate);
+    if (!testNormality(img, xStart, yStart, tileSize, normalityRejectRate))
         return false;
-    }
 
-    rejectRate = 1 - sqrt(sqrt(1 - rejectRate));
-    if (!checkMeans(img, xStart, yStart, size, rejectRate)) {
+    const double meanRejectRate = 1 - sqrt(sqrt(1 - baseRejectRate));
+    if (!checkMeans(img, xStart, yStart, tileSize, meanRejectRate))
         return false;
-    }
 
     return true;
 }
 
-bool tilesAvailable(Image *img, int size, double rejectRate)
+// Finds whether any flat tiles exist at this tile size.
+bool tilesAvailable(Image *img, int tileSize)
 {
-    for (int y = 0; y < img->height(); y += size) {
-        for (int x = 0; x < img->width(); x += size) {
-            if (isFlatTile(img, x, y, size, rejectRate)) {
+    for (int y = 0; y < img->height(); y += tileSize)
+        for (int x = 0; x < img->width(); x += tileSize)
+            if (isFlatTile(img, x, y, tileSize))
                 return true;
-            }
-        }
-    }
 
     return false;
 }
 
-int largestTileSize(Image *img, double rejectRate)
+// Find the largest possible tile size for which tiles exist.
+int largestTileSize(Image *img)
 {
-    int size = 1 << 6;
-    int min = 1 << 4;
-    int max = 1 << 7;
+    int tileSize = 1 << 6;
+    int minSize = 1 << 4;
+    int maxSize = 1 << 7;
 
-    if (tilesAvailable(img, size, rejectRate)) {
-        while (size < max) {
-            size <<= 1;
-            if (!tilesAvailable(img, size, rejectRate)) {
-                return size >> 1;
+    if (tilesAvailable(img, tileSize)) {
+        while (tileSize < maxSize) {
+            tileSize <<= 1;
+            if (!tilesAvailable(img, tileSize)) {
+                return tileSize >> 1;
             }
         }
-        return max;
+        return maxSize;
     } else {
-        while (size > min) {
-            size >>= 1;
-            if (tilesAvailable(img, size, rejectRate)) {
-                return size;
+        while (tileSize > minSize) {
+            tileSize >>= 1;
+            if (tilesAvailable(img, tileSize)) {
+                return tileSize;
             }
         }
+        return 0;
     }
-
-    return 0;
 }
 
-std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int size)
+// Extract the data from a list of tiles to a single array.
+std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int tileSize)
 {
     float *data = img->data();
     std::vector<float> tileData;
@@ -255,8 +247,8 @@ std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int size)
     for (Pixel tile : tiles) {
         int xStart = tile.x();
         int yStart = tile.y();
-        for (int yOffset = 0; yOffset < size; yOffset++) {
-            for (int xOffset = 0; xOffset < size; xOffset++) {
+        for (int yOffset = 0; yOffset < tileSize; yOffset++) {
+            for (int xOffset = 0; xOffset < tileSize; xOffset++) {
                 int y = yStart + yOffset;
                 int x = xStart + xOffset;
                 tileData.push_back(data[y * img->width() + x]);
@@ -267,24 +259,32 @@ std::vector<float> extractData(Image *img, std::vector<Pixel> tiles, int size)
     return tileData;
 }
 
-void estimateStats(Image *img, std::vector<Pixel> tiles, imgStats & stats, int size)
+// Determines the mean, variance and gain of a list of tiles.
+void estimateStats(Image *img, std::vector<Pixel> tiles, int tileSize, imgStats & stats)
 {
-    std::vector<float> tileData = extractData(img, tiles, size);
+    std::vector<float> tileData = extractData(img, tiles, tileSize);
 
     stats.mean = boost::math::statistics::mean(tileData);
     stats.var = boost::math::statistics::variance(tileData);
     stats.gain = stats.mean / stats.var;
+
+    #ifdef DEBUG
+        std::cout << "Image statistics:" << std::endl;
+        std::cout << "  Mean: " << stats.mean << std::endl;
+        std::cout << "  Variance: " << stats.var << std::endl;
+        std::cout << "  Gain: " << stats.gain << std::endl;
+    #endif
 }
 
-void setStats(Image *img, int size, imgStats & stats, double rejectRate)
+void setStats(Image *img, int tileSize, imgStats & stats)
 {
     std::vector<Pixel> tiles;
 
-    for (int y = 0; y < img->height(); y += size) {
-        for (int x = 0; x < img->width(); x += size) {
-            if (isFlatTile(img, x, y, size, rejectRate)) {
-                Pixel p(-1.0f, x, y);
-                tiles.push_back(p);
+    for (int y = 0; y < img->height(); y += tileSize) {
+        for (int x = 0; x < img->width(); x += tileSize) {
+            if (isFlatTile(img, x, y, tileSize)) {
+                Pixel pixel(x, y);
+                tiles.push_back(pixel);
             }
         }
     }
@@ -293,15 +293,16 @@ void setStats(Image *img, int size, imgStats & stats, double rejectRate)
         std::cout << "Number of usable tiles found: " << tiles.size() << std::endl;
     #endif
 
-    estimateStats(img, tiles, stats, size);
+    estimateStats(img, tiles, tileSize, stats);
 }
 
 void estimateBG(Image *img, imgStats & stats)
 {
-    TimerWrapper::TimerInstance()->startTimer();
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->startTimer();
+    #endif
 
-    double rejectRate = 0.05;
-    int tileSize = largestTileSize(img, rejectRate);
+    int tileSize = largestTileSize(img);
 
     if (tileSize == 0) {
         std::cout << "No usable background tiles, aborting." << std::endl;
@@ -309,9 +310,12 @@ void estimateBG(Image *img, imgStats & stats)
     }
 
     #ifdef DEBUG
-        std::cout << "Using a background tile size of: " << tileSize <<std::endl;
+        std::cout << "Using a background tile size of: " << tileSize << std::endl;
     #endif
 
-    setStats(img, tileSize, stats, rejectRate);
-    TimerWrapper::TimerInstance()->stopTimer("Background estimation");
+    setStats(img, tileSize, stats);
+
+    #ifdef TIMED
+        TimerWrapper::TimerInstance()->stopTimer("Background estimation");
+    #endif
 }
