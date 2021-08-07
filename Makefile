@@ -13,7 +13,7 @@ OBJS = \
   Detector.o \
   Heap.o \
   Image.o \
-  realMain.o \
+  main.o \
   MaxTree.o \
   PostProcessing.o \
   Timer.o
