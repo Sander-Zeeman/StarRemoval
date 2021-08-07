@@ -1,5 +1,5 @@
 # StarRemoval
 
-# Prerequisites
+## Prerequisites
 
-# Usage
+## Usage
