@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
 
     Node *nodes = tree->nodes();
     long *ids = detect->ids();
-    long *closestSigAncestors = detect->closestSigAncestors();
 
     fixEdges(img, ids);
 
@@ -50,13 +49,11 @@ int main(int argc, char *argv[])
 
     #ifdef NOISELESS
 
-    //img->stretch(0.0f, 0.2f);
-
     remove(img, ids);
     img->write("_removed.fits");
     img->writeSection("_zoomed_removed.fits");
 
-    hierarchicalInpaint(img,ids, closestSigAncestors, nodes);
+    hierarchicalInpaint(img, ids, nodes);
     img->write("_hierarchy.fits");
     img->writeSection("_zoomed_hierarchy.fits");
 
@@ -87,7 +84,7 @@ int main(int argc, char *argv[])
     img->write("_removed_noisy.fits");
     img->writeSection("_zoomed_removed_noisy.fits");
 
-    hierarchicalInpaint(img,ids, closestSigAncestors, nodes);
+    hierarchicalInpaint(img, ids, nodes);
     img->write("_hierarchy_noisy.fits");
     img->writeSection("_zoomed_hierarchy_noisy.fits");
 

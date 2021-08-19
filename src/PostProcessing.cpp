@@ -58,7 +58,7 @@ void remove(Image *img, long *ids)
     #endif
 }
 
-void hierarchicalInpaint(Image *img, long *ids, long *closestSigAncestors, Node *nodes)
+void hierarchicalInpaint(Image *img, long *ids, Node *nodes)
 {
     #ifdef TIMED
         TimerWrapper::TimerInstance()->startTimer();
@@ -66,17 +66,13 @@ void hierarchicalInpaint(Image *img, long *ids, long *closestSigAncestors, Node 
 
     float *data = img->data();
     bool *mask = createMask(ids, img->size());
-    long parentIndex;
 
     for (long i = 0; i < img->size(); i++) {
-        if (mask[i]) {
-            if (closestSigAncestors[ids[i]] != NO_PARENT) {
-                parentIndex = nodes[closestSigAncestors[ids[i]]].parent();
-            } else {
-                parentIndex = nodes[ids[i]].parent();
-            }
-            data[i] = data[parentIndex];
+        long idx = i;
+        while (mask[idx]) {
+            idx = nodes[ids[idx]].parent();
         }
+        data[i] = data[idx];
     }
 
     delete [] mask;
