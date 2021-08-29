@@ -49,13 +49,13 @@ int main(int argc, char *argv[])
 
     #ifdef NOISELESS
 
+    hierarchicalInpaint(img, ids, nodes, false);
+    img->write("_hierarchy.fits");
+    img->writeSection("_zoomed_hierarchy.fits");
+
     remove(img, ids);
     img->write("_removed.fits");
     img->writeSection("_zoomed_removed.fits");
-
-    hierarchicalInpaint(img, ids, nodes);
-    img->write("_hierarchy.fits");
-    img->writeSection("_zoomed_hierarchy.fits");
 
     interpolateInpaint(img, ids);
     img->write("_interpolate.fits");
@@ -80,13 +80,13 @@ int main(int argc, char *argv[])
     delete img;
     img = new Image(static_cast<char*>(argv[1]));
 
+    hierarchicalInpaint(img, ids, nodes, true);
+    img->write("_hierarchy_noisy.fits");
+    img->writeSection("_zoomed_hierarchy_noisy.fits");
+
     remove(img, ids);
     img->write("_removed_noisy.fits");
     img->writeSection("_zoomed_removed_noisy.fits");
-
-    hierarchicalInpaint(img, ids, nodes);
-    img->write("_hierarchy_noisy.fits");
-    img->writeSection("_zoomed_hierarchy_noisy.fits");
 
     interpolateInpaint(img, ids);
     img->write("_interpolate_noisy.fits");

@@ -58,7 +58,7 @@ void remove(Image *img, long *ids)
     #endif
 }
 
-void hierarchicalInpaint(Image *img, long *ids, Node *nodes)
+void hierarchicalInpaint(Image *img, long *ids, Node *nodes, bool isNoisy)
 {
     #ifdef TIMED
         TimerWrapper::TimerInstance()->startTimer();
@@ -72,7 +72,19 @@ void hierarchicalInpaint(Image *img, long *ids, Node *nodes)
         while (mask[idx]) {
             idx = nodes[ids[idx]].parent();
         }
-        data[i] = data[idx];
+
+        /*
+         Counteracting the effect that noisy images have gaps.
+         This occurs because the parent value of these sections
+         had a value lower than the image mean, which means the
+         value was below the root value of the MaxTree, thus the
+         inpainted value will be 0.
+        */
+        if (data[idx] == 0 && isNoisy) {
+            data[i] = img->stats().mean;
+        } else {
+            data[i] = data[idx];
+        }
     }
 
     delete [] mask;

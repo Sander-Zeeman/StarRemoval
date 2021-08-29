@@ -12,7 +12,7 @@ bool *createMask(long *ids, long size);
 
 void remove(Image *img, long *ids);
 
-void hierarchicalInpaint(Image *img, long *ids, Node *nodes);
+void hierarchicalInpaint(Image *img, long *ids, Node *nodes, bool isNoisy);
 
 void findLimits(bool *mask, int width, int x, int y, int & lowX, int & highX, int & lowY, int & highY);
 float interpolate2D(int idx, int low, float dataLow, int high, float dataHigh);
